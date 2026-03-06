@@ -6,9 +6,11 @@ readme = "README.md"
 requires-python = ">=3.12"
 dependencies = [
     "alembic>=1.18.4",
+    "apprise>=1.9.7",
     "beautifulsoup4>=4.14.3",
     "django>=6.0.3",
     "pandas>=3.0.0",
+    "prefect>=3.6.21",
     "psycopg2-binary>=2.9.11",
     "python-dotenv>=1.2.1",
     "requests>=2.32.5",
