@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Train46 - European Sleeper Tracker</title>
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+
+    <!-- Static files -->
+    {% load static %}
+    <link rel="stylesheet" href="{% static 'ui/style.css' %}">
+</head>
+
+<body>
+    <div class="background-decor"></div>
+    <div class="background-decor-2"></div>
+
+    <header class="main-header">
+        <div class="logo">
+            <span class="logo-icon">🚆</span>
+            <h1>Train46 Explorer</h1>
+        </div>
+        <p class="subtitle">Find the lowest European Sleeper trips between Prague & Amsterdam</p>
+    </header>
+
+    <main class="container">
+        <section class="search-section">
+            <form id="search-form" class="glass-panel">
+                <div class="form-group">
+                    <label>Starting City</label>
+                    <div class="radio-group">
+                        <input type="radio" id="start-prague" name="start" value="prague" checked>
+                        <label for="start-prague" class="radio-label">Prague</label>
+
+                        <input type="radio" id="start-amsterdam" name="start" value="amsterdam">
+                        <label for="start-amsterdam" class="radio-label">Amsterdam</label>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label>Journey Type</label>
+                    <div class="radio-group">
+                        <input type="radio" id="type-single" name="type" value="single" checked>
+                        <label for="type-single" class="radio-label">Single</label>
+
+                        <input type="radio" id="type-return" name="type" value="return">
+                        <label for="type-return" class="radio-label">Return</label>
+                    </div>
+                </div>
+
+                <div class="form-group return-params" id="return-params-group">
+                    <label for="max-duration">Max Trip Duration (Days)</label>
+                    <input type="number" id="max-duration" name="max_duration" value="14" min="1" max="90"
+                        class="num-input">
+                    <div class="helper-text">Find the lowest return prices within this timeframe</div>
+                </div>
+
+                <div class="form-group">
+                    <label>Seat Type</label>
+                    <div class="radio-group">
+                        <input type="radio" id="seat-any" name="seat_type" value="any" checked>
+                        <label for="seat-any" class="radio-label">Any (Cheapest)</label>
+
+                        <input type="radio" id="seat-couchette" name="seat_type" value="couchette">
+                        <label for="seat-couchette" class="radio-label">Couchettes Only</label>
+                    </div>
+                </div>
+
+                <button type="submit" class="primary-btn" id="search-btn">
+                    <span class="btn-text">Search Lowest Fares</span>
+                    <span class="btn-loader hidden"></span>
+                </button>
+            </form>
+        </section>
+
+        <section class="results-section">
+            <div id="results-container" class="results-grid">
+                <!-- Results populated by JS -->
+            </div>
+
+            <div id="empty-state" class="empty-state">
+                <div class="empty-icon">✨</div>
+                <p>Select your criteria and start the search.</p>
+            </div>
+
+            <div id="no-results-state" class="empty-state hidden">
+                <div class="empty-icon">😕</div>
+                <p>No valid trips found for this criteria.</p>
+            </div>
+        </section>
+    </main>
+
+    <script src="{% static 'ui/script.js' %}"></script>
+</body>
+
+</html>
