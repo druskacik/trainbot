@@ -1,3 +1,4 @@
+import time
 from datetime import date, timedelta, datetime
 import requests
 from typing import List
@@ -56,6 +57,8 @@ class EuropeanSleeperScraper(RoutesScraper):
                 print(f"Scraping train {train_number} for {current_date_str}")
                 
                 result = self._search_availability(current_date_str, train_number)
+                # Wait 1 second to avoid rate limiting
+                time.sleep(1)
                 if not result or 'availabilityResult' not in result or not result['availabilityResult']:
                     continue
                     
