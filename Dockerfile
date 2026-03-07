@@ -26,4 +26,4 @@ RUN chmod +x docker-entrypoint.sh
 EXPOSE 80
 
 ENTRYPOINT ["./docker-entrypoint.sh"]
-CMD ["python", "manage.py", "runserver", "0.0.0.0:80"]
+CMD ["gunicorn", "--bind", "0.0.0.0:80", "--workers", "3", "web.wsgi:application"]
