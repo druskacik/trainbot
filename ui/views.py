@@ -1,10 +1,44 @@
 import json
 from datetime import datetime, timedelta
 from django.http import JsonResponse
-from django.db.models import Min, Max, Prefetch, F, Q
+from django.db.models import Subquery, OuterRef
 from django.shortcuts import render
 from django.views.decorators.http import require_GET
 from .models import Route, Price
+
+
+def _get_routes_by_date(dep_station, arr_station, seat_type):
+    """Get the cheapest latest-scraped price per travel date."""
+    price_qs = Price.objects.filter(route_id=OuterRef('pk'))
+    if seat_type == 'couchette':
+        price_qs = price_qs.filter(is_couchette=True)
+
+    latest_price = Subquery(price_qs.order_by('-scraped_at').values('price')[:1])
+    latest_currency = Subquery(price_qs.order_by('-scraped_at').values('currency')[:1])
+
+    routes = Route.objects.filter(
+        departure_station=dep_station,
+        arrival_station=arr_station,
+    ).annotate(
+        latest_price=latest_price,
+        latest_currency=latest_currency,
+    ).filter(
+        latest_price__isnull=False,
+    ).order_by('travel_date')
+
+    # Group by travel_date and find cheapest latest price
+    result = {}
+    for route in routes:
+        date = route.travel_date
+        if date not in result or route.latest_price < result[date]['cheapest_price']:
+            result[date] = {
+                'travel_date': date,
+                'cheapest_price': route.latest_price,
+                'currency': route.latest_currency,
+            }
+
+    return sorted(result.values(), key=lambda x: x['travel_date'])
+
 
 def index(request):
     return render(request, 'ui/index.html')
@@ -32,20 +66,8 @@ def search_trips(request):
             dep_id = '8400058'
             arr_id = '5457076'
 
-        # Build the price filter based on seat type
-        price_filter = Q()
-        if seat_type == 'couchette':
-            price_filter = Q(prices__is_couchette=True)
-
-        # Fetch all available prices for outbound
-        # To get the CHEAPEST price for each route, we can annotate
-        outbound_routes = Route.objects.filter(
-            departure_station=outbound_dep,
-            arrival_station=outbound_arr
-        ).values('travel_date').annotate(
-            cheapest_price=Min('prices__price', filter=price_filter),
-            currency=Max('prices__currency', filter=price_filter)
-        ).filter(cheapest_price__isnull=False).order_by('travel_date')
+        # Get cheapest latest-scraped price per travel date
+        outbound_routes = _get_routes_by_date(outbound_dep, outbound_arr, seat_type)
 
         results = []
 
@@ -64,13 +86,7 @@ def search_trips(request):
             # Return journey
             max_duration = int(max_duration_str) if max_duration_str.isdigit() else 30
             
-            return_routes = Route.objects.filter(
-                departure_station=return_dep,
-                arrival_station=return_arr
-            ).values('travel_date').annotate(
-                cheapest_price=Min('prices__price', filter=price_filter),
-                currency=Max('prices__currency', filter=price_filter)
-            ).filter(cheapest_price__isnull=False).order_by('travel_date')
+            return_routes = _get_routes_by_date(return_dep, return_arr, seat_type)
 
             # Build list of combinations
             return_list = list(return_routes)
