@@ -12,5 +12,8 @@ python manage.py migrate
 echo "Collecting static files..."
 python manage.py collectstatic --noinput
 
+echo "Starting Prefect flow worker in background..."
+python src/flows.py &
+
 echo "Starting server..."
 exec "$@"
