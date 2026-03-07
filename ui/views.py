@@ -13,8 +13,8 @@ def _get_routes_by_date(dep_station, arr_station, seat_type):
     if seat_type == 'couchette':
         price_qs = price_qs.filter(is_couchette=True)
 
-    latest_price = Subquery(price_qs.order_by('-scraped_at').values('price')[:1])
-    latest_currency = Subquery(price_qs.order_by('-scraped_at').values('currency')[:1])
+    latest_price = Subquery(price_qs.order_by('-scraped_at', 'price').values('price')[:1])
+    latest_currency = Subquery(price_qs.order_by('-scraped_at', 'price').values('currency')[:1])
 
     routes = Route.objects.filter(
         departure_station=dep_station,
