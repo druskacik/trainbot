@@ -5,6 +5,7 @@ from typing import List
 
 from .RoutesScraper import RoutesScraper
 from .models import Route, Price
+from .ScrapeResult import ScrapeResult, ScrapeFailure
 
 class EuropeanSleeperScraper(RoutesScraper):
     def __init__(self):
@@ -30,22 +31,14 @@ class EuropeanSleeperScraper(RoutesScraper):
             "bicycleCount": 0
         }
         
-        try:
-            response = requests.post(self.api_url, json=body)
-            response.raise_for_status()
-            return response.json()
-        except requests.exceptions.HTTPError as e:
-            if response.status_code == 400:
-                print(f"Skipping {date_str} for train {train_number} due to 400 Bad Request.")
-                return {}
-            print(f"Failed to fetch {date_str} for train {train_number}: {e}")
-            return {}
-        except Exception as e:
-            print(f"Failed to fetch {date_str} for train {train_number}: {e}")
-            return {}
+        response = requests.post(self.api_url, json=body)
+        response.raise_for_status()
+        return response.json()
 
-    def scrape(self) -> List[Route]:
+    def scrape(self) -> ScrapeResult:
         results = []
+        failures = []
+        total_requests = 0
         start_date = date.today()
         
         # 3 months = 90 days
@@ -54,11 +47,28 @@ class EuropeanSleeperScraper(RoutesScraper):
             current_date_str = current_date_obj.strftime('%Y-%m-%d')
             
             for train_number in ['452', '453']:
+                total_requests += 1
                 print(f"Scraping train {train_number} for {current_date_str}")
                 
-                result = self._search_availability(current_date_str, train_number)
-                # Wait 1 second to avoid rate limiting
-                time.sleep(1)
+                try:
+                    result = self._search_availability(current_date_str, train_number)
+                except requests.exceptions.HTTPError as e:
+                    if e.response is not None and e.response.status_code == 400:
+                        print(f"Skipping {current_date_str} for train {train_number} due to 400 Bad Request.")
+                    else:
+                        error_msg = str(e)
+                        print(f"Failed to fetch {current_date_str} for train {train_number}: {error_msg}")
+                        failures.append(ScrapeFailure(current_date_str, train_number, error_msg))
+                    continue
+                except Exception as e:
+                    error_msg = str(e)
+                    print(f"Failed to fetch {current_date_str} for train {train_number}: {error_msg}")
+                    failures.append(ScrapeFailure(current_date_str, train_number, error_msg))
+                    continue
+                finally:
+                    # Wait 1 second to avoid rate limiting
+                    time.sleep(1)
+
                 if not result or 'availabilityResult' not in result or not result['availabilityResult']:
                     continue
                     
@@ -133,4 +143,4 @@ class EuropeanSleeperScraper(RoutesScraper):
                 
                 results.append((route_obj, price_objs))
                 
-        return results
+        return ScrapeResult(routes=results, failures=failures, total_requests=total_requests)
