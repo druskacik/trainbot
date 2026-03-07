@@ -19,7 +19,11 @@ RUN pip install --no-cache-dir .
 # Copy the rest of the application
 COPY . .
 
+# Copy and set up the entrypoint script
+RUN chmod +x docker-entrypoint.sh
+
 # Expose the port Django runs on
 EXPOSE 80
 
+ENTRYPOINT ["./docker-entrypoint.sh"]
 CMD ["python", "manage.py", "runserver", "0.0.0.0:80"]
