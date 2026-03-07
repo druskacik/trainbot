@@ -6,27 +6,55 @@ from django.shortcuts import render
 from django.views.decorators.http import require_GET
 from .models import Route, Price
 
+def _build_price_qs(seat_type):
+    qs = Price.objects.all()
+    if seat_type == 'couchette':
+        qs = qs.filter(is_couchette=True)
+    return qs
 
 def _get_routes_by_date(dep_station, arr_station, seat_type):
-    """Get the cheapest latest-scraped price per travel date."""
-    price_qs = Price.objects.filter(route_id=OuterRef('pk'))
-    if seat_type == 'couchette':
-        price_qs = price_qs.filter(is_couchette=True)
+    base_price_qs = _build_price_qs(seat_type)
 
-    latest_price = Subquery(price_qs.order_by('-scraped_at', 'price').values('price')[:1])
-    latest_currency = Subquery(price_qs.order_by('-scraped_at', 'price').values('currency')[:1])
+    # Subquery: latest scraped_at for this route
+    latest_ts_sq = Subquery(
+        base_price_qs.filter(route_id=OuterRef('pk'))
+        .order_by('-scraped_at')
+        .values('scraped_at')[:1]
+    )
+
+    # Subquery: cheapest price within 1 hour before the latest scraped_at
+    cheapest_price_sq = Subquery(
+        base_price_qs.filter(
+            route_id=OuterRef('pk'),
+            scraped_at__gte=OuterRef('latest_scraped_at') - timedelta(hours=1),
+            scraped_at__lte=OuterRef('latest_scraped_at'),
+        )
+        .order_by('price')
+        .values('price')[:1]
+    )
+
+    cheapest_currency_sq = Subquery(
+        base_price_qs.filter(
+            route_id=OuterRef('pk'),
+            scraped_at__gte=OuterRef('latest_scraped_at') - timedelta(hours=1),
+            scraped_at__lte=OuterRef('latest_scraped_at'),
+        )
+        .order_by('price')
+        .values('currency')[:1]
+    )
 
     routes = Route.objects.filter(
         departure_station=dep_station,
         arrival_station=arr_station,
     ).annotate(
-        latest_price=latest_price,
-        latest_currency=latest_currency,
+        latest_scraped_at=latest_ts_sq,
+    ).annotate(
+        latest_price=cheapest_price_sq,
+        latest_currency=cheapest_currency_sq,
     ).filter(
         latest_price__isnull=False,
     ).order_by('travel_date')
 
-    # Group by travel_date and find cheapest latest price
     result = {}
     for route in routes:
         date = route.travel_date
