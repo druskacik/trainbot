@@ -131,3 +131,4 @@ if not DEBUG:
     # Ensure cookies are only sent over HTTPS
     SESSION_COOKIE_SECURE = True
     CSRF_COOKIE_SECURE = True
+    CSRF_TRUSTED_ORIGINS = [f'https://{host}' for host in ALLOWED_HOSTS]
