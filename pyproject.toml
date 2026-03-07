@@ -12,6 +12,7 @@ dependencies = [
     "gunicorn>=25.1.0",
     "pandas>=3.0.0",
     "prefect>=3.6.21",
+    "asyncpg>=0.30.0",
     "psycopg2-binary>=2.9.11",
     "python-dotenv>=1.2.1",
     "requests>=2.32.5",
