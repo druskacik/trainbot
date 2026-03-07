@@ -15,6 +15,9 @@ uv run python manage.py migrate
 
 # Start the dev server
 uv run python manage.py runserver
+
+# To be able to connect via network
+uv run python manage.py runserver 0.0.0.0:8000
 ```
 
 ## 🛠 Tech Stack

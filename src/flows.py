@@ -44,14 +44,6 @@ def daily_scraper_flow():
         raise e
 
 if __name__ == "__main__":
-    import time
-    # Give the DB a moment to settle if multiple workers are starting
-    time.sleep(5)
-    
-    # Run once on startup (deployment trigger)
-    print("Triggering initial scrape on startup...")
-    daily_scraper_flow()
-
     # Use serve() to keep the process alive and run on a schedule
     daily_scraper_flow.serve(
         name="daily-train-scrape",

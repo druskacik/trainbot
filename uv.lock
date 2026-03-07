@@ -2121,6 +2121,7 @@ source = { virtual = "." }
 dependencies = [
     { name = "alembic" },
     { name = "apprise" },
+    { name = "asyncpg" },
     { name = "beautifulsoup4" },
     { name = "django" },
     { name = "gunicorn" },
@@ -2138,6 +2139,7 @@ dependencies = [
 requires-dist = [
     { name = "alembic", specifier = ">=1.18.4" },
     { name = "apprise", specifier = ">=1.9.7" },
+    { name = "asyncpg", specifier = ">=0.30.0" },
     { name = "beautifulsoup4", specifier = ">=4.14.3" },
     { name = "django", specifier = ">=6.0.3" },
     { name = "gunicorn", specifier = ">=25.1.0" },
