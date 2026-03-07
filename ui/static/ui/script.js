@@ -63,7 +63,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 <div class="price-tag">${trip.total_price.toFixed(2)} <span style="font-size: 0.5em; font-weight: normal">${currencySymbol}</span></div>
                 
                 <div class="journey-leg">
-                    <div class="leg-label"><span style="font-size: 1.2em">🛫</span> Outbound</div>
+                    <div class="leg-label"><span style="font-size: 1.2em">➡️</span> Outbound</div>
                     <div class="leg-date">${formatDate(trip.outbound_date)}</div>
                     ${isReturn ? `<div class="leg-price">Leg Price: ${trip.outbound_price.toFixed(2)} ${currencySymbol}</div>` : ''}
                 </div>
@@ -72,7 +72,7 @@ document.addEventListener('DOMContentLoaded', () => {
             if (isReturn && trip.return_date) {
                 content += `
                     <div class="journey-leg">
-                        <div class="leg-label"><span style="font-size: 1.2em">🛬</span> Return</div>
+                        <div class="leg-label"><span style="font-size: 1.2em">⬅️</span> Return</div>
                         <div class="leg-date">${formatDate(trip.return_date)}</div>
                         <div class="leg-price">Leg Price: ${trip.return_price.toFixed(2)} ${currencySymbol}</div>
                     </div>
