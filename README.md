@@ -1,4 +1,4 @@
-# Train46 - Train Route Scraper & Price Tracker
+# TrainBot - Train Route Scraper & Price Tracker
 
 A robust train route scraping and price tracking application designed to help you find the cheapest train trips (including sleepers/couchettes) between European cities.
 
