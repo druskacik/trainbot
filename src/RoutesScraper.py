@@ -21,11 +21,29 @@ class RoutesScraper(ABC):
     def __init__(self):
         self.engine = create_engine(DATABASE_URL)
         self.SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=self.engine)
+        self._route_buffer = []
+        self._batch_size = 50
+        self._total_saved = 0
 
     @abstractmethod
     def scrape(self):
-        """Implement the scraping logic here. Must return a list of tuples: (Route, Price)."""
+        """Implement the scraping logic here. Must return a ScrapeResult."""
         pass
+
+    def save_route_in_batch(self, route_obj, prices):
+        """Add a route to the current batch, flushing to the database if the batch is full."""
+        self._route_buffer.append((route_obj, prices))
+        if len(self._route_buffer) >= self._batch_size:
+            self.flush_routes()
+
+    def flush_routes(self):
+        """Save any routes currently in the buffer to the database."""
+        if not self._route_buffer:
+            return
+            
+        self.save_routes(self._route_buffer)
+        self._total_saved += len(self._route_buffer)
+        self._route_buffer = []
 
     def save_routes(self, routes_and_prices: list):
         """Save the list of routes and prices to the database."""
@@ -37,17 +55,23 @@ class RoutesScraper(ABC):
         try:
             route_count = 0
             price_count = 0
+            seen_route_ids = set()
+
             for route_obj, prices in routes_and_prices:
-                session.merge(route_obj)
-                route_count += 1
+                if route_obj.id not in seen_route_ids:
+                    session.merge(route_obj)
+                    seen_route_ids.add(route_obj.id)
+                    route_count += 1
+                
                 if getattr(prices, '__iter__', False) and not isinstance(prices, (str, dict)):
                     for price_obj in prices:
                         if price_obj is not None:
-                            session.add(price_obj)
+                            session.merge(price_obj)
                             price_count += 1
                 elif prices is not None:
-                    session.add(prices)
+                    session.merge(prices)
                     price_count += 1
+                    
             session.commit()
             print(f"Successfully saved {route_count} routes and {price_count} prices.")
         except Exception as e:

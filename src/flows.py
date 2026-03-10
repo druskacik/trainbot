@@ -17,9 +17,8 @@ def scrape_train_data():
     print("Starting European Sleeper Scraper task...")
     scraper = EuropeanSleeperScraper()
     result = scraper.scrape()
-    if result.routes:
-        scraper.save_routes(result.routes)
-        print(f"Successfully scraped and saved {len(result.routes)} routes.")
+    if result.routes_scraped > 0:
+        print(f"Successfully scraped and saved {result.routes_scraped} routes.")
     else:
         print("No routes were found.")
     return result

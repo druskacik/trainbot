@@ -13,7 +13,7 @@ class ScrapeFailure:
 @dataclass
 class ScrapeResult:
     """Holds the outcome of a scrape run, including successes and failures."""
-    routes: list = field(default_factory=list)
+    routes_scraped: int = 0
     failures: List[ScrapeFailure] = field(default_factory=list)
     total_requests: int = 0
 
@@ -32,13 +32,13 @@ class ScrapeResult:
         if not self.failures:
             return (
                 f"✅ All {self.total_requests} requests succeeded. "
-                f"{len(self.routes)} routes scraped."
+                f"{self.routes_scraped} routes scraped."
             )
 
         lines = [
             f"⚠️ {len(self.failures)}/{self.total_requests} requests failed "
             f"({self.success_rate:.1f}% success rate). "
-            f"{len(self.routes)} routes scraped."
+            f"{self.routes_scraped} routes scraped."
         ]
         for f in self.failures:
             lines.append(f"  • {f.date} train {f.train_number}: {f.error}")
