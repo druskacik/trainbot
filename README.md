@@ -10,9 +10,6 @@ Ensure you have a PostgreSQL database running and configured in your `.env` file
 # Install dependencies
 uv sync
 
-# Run migrations
-uv run python manage.py migrate
-
 # Start the dev server
 uv run python manage.py runserver
 

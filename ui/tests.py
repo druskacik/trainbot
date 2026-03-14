@@ -1,14 +1,29 @@
 from django.test import TestCase
 from django.utils import timezone
-from .models import Route, Price
-from .views import _get_routes_by_date
+from django.db import connection
+from .models import Route, CurrentAvailability
+from .views import _get_routes_with_best_price
+
+
+def _tables_exist():
+    """Check if routes and current_availability tables exist (schema from Alembic)."""
+    with connection.cursor() as cursor:
+        cursor.execute("""
+            SELECT EXISTS (SELECT 1 FROM information_schema.tables WHERE table_name = 'routes')
+            AND EXISTS (SELECT 1 FROM information_schema.tables WHERE table_name = 'current_availability')
+        """)
+        return cursor.fetchone()[0]
+
 
 class SearchLogicTest(TestCase):
-    def test_cheapest_price_selection_same_timestamp(self):
+    def test_any_seat_type_selects_cheapest_of_seat_or_couchette(self):
         """
-        Test that when multiple prices have the same scraped_at timestamp,
-        the cheapest one is selected.
+        When seat_type is 'any', the search returns the cheapest available option
+        per route (min of seat and couchette prices).
+        Requires routes and current_availability tables (run Alembic migrations on test DB).
         """
+        if not _tables_exist():
+            self.skipTest("routes and current_availability tables required; run Alembic on test DB")
         travel_date = timezone.now().date()
         route = Route.objects.create(
             id="test-route-1",
@@ -20,30 +35,30 @@ class SearchLogicTest(TestCase):
             departure_time=timezone.now(),
             arrival_time=timezone.now() + timezone.timedelta(hours=10)
         )
-        
-        timestamp = timezone.now()
-        
-        # Create a more expensive couchette price
-        Price.objects.create(
+
+        now = timezone.now()
+        CurrentAvailability.objects.create(
             route=route,
+            is_couchette=True,
             price=49.99,
             currency="EUR",
-            is_couchette=True,
-            scraped_at=timestamp
+            last_scraped_at=now,
+            last_seen_available_at=now
         )
-        
-        # Create a cheaper non-couchette price with the EXACT same timestamp
-        Price.objects.create(
+        CurrentAvailability.objects.create(
             route=route,
+            is_couchette=False,
             price=29.99,
             currency="EUR",
-            is_couchette=False,
-            scraped_at=timestamp
+            last_scraped_at=now,
+            last_seen_available_at=now
         )
-        
-        # Call the logic being tested
-        results = _get_routes_by_date("PRAHA HL. N.", "Amsterdam CS", "any")
-        
-        # Verify the results
+
+        routes = _get_routes_with_best_price(
+            ["PRAHA HL. N."], ["Amsterdam CS"], "any"
+        )
+        results = list(routes)
+
         self.assertEqual(len(results), 1)
-        self.assertEqual(results[0]['cheapest_price'], 29.99)
+        self.assertEqual(results[0].latest_price, 29.99)
+        self.assertEqual(results[0].latest_currency, "EUR")

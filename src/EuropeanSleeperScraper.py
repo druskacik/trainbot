@@ -217,8 +217,12 @@ class EuropeanSleeperScraper(RoutesScraper):
                                 currency=currency,
                                 is_couchette=True
                             ))
-                        
-                        self.save_route_in_batch(route_obj, price_objs)
+
+                        availability = [
+                            (False, min_price, currency),
+                            (True, min_couchette_price, currency),
+                        ]
+                        self.save_route_in_batch(route_obj, price_objs, availability)
                 
         self.flush_routes()
         return ScrapeResult(routes_scraped=self._total_saved, failures=failures, total_requests=total_requests)

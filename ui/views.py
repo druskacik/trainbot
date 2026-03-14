@@ -1,8 +1,8 @@
 from django.http import JsonResponse
-from django.db.models import Subquery, OuterRef
+from django.db.models import Subquery, OuterRef, Min
 from django.shortcuts import render
 from django.views.decorators.http import require_GET
-from .models import Route, Price
+from .models import Route, CurrentAvailability
 
 # Map EuropeanSleeper API ID to all known database station representations
 STATIONS = {
@@ -26,24 +26,59 @@ STATIONS = {
 }
 
 
-def _get_routes_with_latest_prices(dep_station_names, arr_station_names, is_couchette):
-    """For each route matching the station pair, annotate with its latest scraped
-    price (filtered by is_couchette) and order cheapest-first."""
-    latest_price_sq = Price.objects.filter(
-        route=OuterRef('pk'),
-        is_couchette=is_couchette,
-    ).order_by('-scraped_at')
+def _get_routes_with_best_price(dep_station_names, arr_station_names, seat_type):
+    """For each route matching the station pair, annotate with best available price
+    and order cheapest-first. seat_type: 'seat' | 'couchette' | 'any'."""
+    base_routes = Route.objects.filter(
+        departure_station__in=dep_station_names,
+        arrival_station__in=arr_station_names,
+    )
 
+    if seat_type == 'seat':
+        return (
+            base_routes.filter(availability__is_couchette=False, availability__price__isnull=False)
+            .annotate(
+                latest_price=Min('availability__price'),
+                latest_currency=Subquery(
+                    CurrentAvailability.objects.filter(
+                        route=OuterRef('pk'),
+                        is_couchette=False,
+                        price__isnull=False,
+                    ).order_by('price').values('currency')[:1]
+                ),
+            )
+            .distinct()
+            .order_by('latest_price')
+        )
+    if seat_type == 'couchette':
+        return (
+            base_routes.filter(availability__is_couchette=True, availability__price__isnull=False)
+            .annotate(
+                latest_price=Min('availability__price'),
+                latest_currency=Subquery(
+                    CurrentAvailability.objects.filter(
+                        route=OuterRef('pk'),
+                        is_couchette=True,
+                        price__isnull=False,
+                    ).order_by('price').values('currency')[:1]
+                ),
+            )
+            .distinct()
+            .order_by('latest_price')
+        )
+    # seat_type == 'any': cheapest of seat or couchette per route
     return (
-        Route.objects.filter(
-            departure_station__in=dep_station_names,
-            arrival_station__in=arr_station_names,
-        )
+        base_routes.filter(availability__price__isnull=False)
         .annotate(
-            latest_price=Subquery(latest_price_sq.values('price')[:1]),
-            latest_currency=Subquery(latest_price_sq.values('currency')[:1]),
+            latest_price=Min('availability__price'),
+            latest_currency=Subquery(
+                CurrentAvailability.objects.filter(
+                    route=OuterRef('pk'),
+                    price__isnull=False,
+                ).order_by('price').values('currency')[:1]
+            ),
         )
-        .filter(latest_price__isnull=False)
+        .distinct()
         .order_by('latest_price')
     )
 
@@ -76,11 +111,11 @@ def search_trips(request):
         if start_id not in STATIONS or end_id not in STATIONS:
             return JsonResponse({'status': 'error', 'message': 'Invalid station IDs provided.'}, status=400)
 
-        is_couchette = seat_type == 'couchette'
+        seat_type_normalized = seat_type if seat_type in ('seat', 'couchette', 'any') else 'any'
         outbound_dep = STATIONS[start_id]['db_names']
         outbound_arr = STATIONS[end_id]['db_names']
 
-        outbound_routes = _get_routes_with_latest_prices(outbound_dep, outbound_arr, is_couchette)
+        outbound_routes = _get_routes_with_best_price(outbound_dep, outbound_arr, seat_type_normalized)
 
         results = []
 
@@ -104,7 +139,7 @@ def search_trips(request):
             max_duration = int(max_duration_str) if max_duration_str.isdigit() else 30
             return_dep = STATIONS[end_id]['db_names']
             return_arr = STATIONS[start_id]['db_names']
-            return_routes = list(_get_routes_with_latest_prices(return_dep, return_arr, is_couchette))
+            return_routes = list(_get_routes_with_best_price(return_dep, return_arr, seat_type_normalized))
 
             for out_route in outbound_routes:
                 valid_returns = [

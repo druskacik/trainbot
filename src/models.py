@@ -1,5 +1,5 @@
 from datetime import datetime, date
-from sqlalchemy import Column, Integer, String, Float, DateTime, Date, ForeignKey, Boolean
+from sqlalchemy import Column, Integer, String, Float, DateTime, Date, ForeignKey, Boolean, UniqueConstraint
 from sqlalchemy.orm import declarative_base, relationship
 
 Base = declarative_base()
@@ -17,6 +17,7 @@ class Route(Base):
     arrival_time = Column(DateTime, nullable=False)
 
     prices = relationship("Price", back_populates="route", cascade="all, delete-orphan")
+    availability = relationship("CurrentAvailability", back_populates="route", cascade="all, delete-orphan")
 
     def __repr__(self):
         return f"<Route(id='{self.id}', train='{self.train_number}', from='{self.departure_station}', to='{self.arrival_station}', date='{self.travel_date}')>"
@@ -35,3 +36,21 @@ class Price(Base):
 
     def __repr__(self):
         return f"<Price(route_id='{self.route_id}', price={self.price} {self.currency}, scraped_at='{self.scraped_at}')>"
+
+
+class CurrentAvailability(Base):
+    __tablename__ = 'current_availability'
+    __table_args__ = (UniqueConstraint('route_id', 'is_couchette', name='uq_current_availability_route_couchette'),)
+
+    id = Column(Integer, primary_key=True, autoincrement=True)
+    route_id = Column(String, ForeignKey('routes.id'), nullable=False, index=True)
+    is_couchette = Column(Boolean, nullable=False)
+    price = Column(Float, nullable=True)
+    currency = Column(String(3), nullable=True)
+    last_scraped_at = Column(DateTime, nullable=False)
+    last_seen_available_at = Column(DateTime, nullable=True)
+
+    route = relationship("Route", back_populates="availability")
+
+    def __repr__(self):
+        return f"<CurrentAvailability(route_id='{self.route_id}', is_couchette={self.is_couchette}, price={self.price})>"

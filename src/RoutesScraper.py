@@ -1,11 +1,12 @@
 import os
+from datetime import datetime
 from abc import ABC, abstractmethod
-from typing import List
+from typing import List, Tuple, Optional
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 from dotenv import load_dotenv
 
-from .models import Route
+from .models import Route, CurrentAvailability
 
 load_dotenv()
 
@@ -30,9 +31,11 @@ class RoutesScraper(ABC):
         """Implement the scraping logic here. Must return a ScrapeResult."""
         pass
 
-    def save_route_in_batch(self, route_obj, prices):
-        """Add a route to the current batch, flushing to the database if the batch is full."""
-        self._route_buffer.append((route_obj, prices))
+    def save_route_in_batch(self, route_obj, prices, availability: List[Tuple[bool, Optional[float], Optional[str]]]):
+        """Add a route to the current batch, flushing to the database if the batch is full.
+        availability: list of (is_couchette, price, currency) for seat and couchette; use None for price when sold out.
+        """
+        self._route_buffer.append((route_obj, prices, availability))
         if len(self._route_buffer) >= self._batch_size:
             self.flush_routes()
 
@@ -45,24 +48,28 @@ class RoutesScraper(ABC):
         self._total_saved += len(self._route_buffer)
         self._route_buffer = []
 
-    def save_routes(self, routes_and_prices: list):
-        """Save the list of routes and prices to the database."""
-        if not routes_and_prices:
+    def save_routes(self, routes_prices_availability: list):
+        """Save the list of routes, prices, and availability to the database.
+        Each item is (route_obj, prices, availability) where availability is list of (is_couchette, price, currency).
+        """
+        if not routes_prices_availability:
             print("No routes to save.")
             return
 
         session = self.SessionLocal()
+        now = datetime.utcnow()
         try:
             route_count = 0
             price_count = 0
+            availability_count = 0
             seen_route_ids = set()
 
-            for route_obj, prices in routes_and_prices:
+            for route_obj, prices, availability in routes_prices_availability:
                 if route_obj.id not in seen_route_ids:
                     session.merge(route_obj)
                     seen_route_ids.add(route_obj.id)
                     route_count += 1
-                
+
                 if getattr(prices, '__iter__', False) and not isinstance(prices, (str, dict)):
                     for price_obj in prices:
                         if price_obj is not None:
@@ -71,9 +78,32 @@ class RoutesScraper(ABC):
                 elif prices is not None:
                     session.merge(prices)
                     price_count += 1
-                    
+
+                for is_couchette, price, currency in availability:
+                    existing = session.query(CurrentAvailability).filter_by(
+                        route_id=route_obj.id,
+                        is_couchette=is_couchette
+                    ).first()
+                    if existing:
+                        existing.price = price
+                        existing.currency = currency
+                        existing.last_scraped_at = now
+                        if price is not None:
+                            existing.last_seen_available_at = now
+                        availability_count += 1
+                    else:
+                        session.add(CurrentAvailability(
+                            route_id=route_obj.id,
+                            is_couchette=is_couchette,
+                            price=price,
+                            currency=currency,
+                            last_scraped_at=now,
+                            last_seen_available_at=now if price is not None else None
+                        ))
+                        availability_count += 1
+
             session.commit()
-            print(f"Successfully saved {route_count} routes and {price_count} prices.")
+            print(f"Successfully saved {route_count} routes, {price_count} prices, {availability_count} availability rows.")
         except Exception as e:
             session.rollback()
             print(f"Error saving routes: {e}")
