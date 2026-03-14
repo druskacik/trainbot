@@ -1,4 +1,4 @@
-from prefect import flow, task
+from prefect import flow, serve, task
 import apprise
 import os
 import sys
@@ -130,8 +130,13 @@ def daily_scraper_flow():
 
 
 if __name__ == "__main__":
-    # Use serve() to keep the process alive and run on a schedule
-    daily_scraper_flow.serve(
-        name="daily-train-scrape",
-        cron="0 2 * * *",  # Run at 2:00 AM every day
+    # Serve all three flows so each can be run from the Prefect dashboard.
+    # Only the daily flow has a schedule; the other two are run on demand.
+    serve(
+        daily_scraper_flow.to_deployment(
+            name="daily-train-scrape",
+            cron="0 2 * * *",  # Run at 2:00 AM every day
+        ),
+        european_sleeper_flow.to_deployment(name="european-sleeper"),
+        nightjet_flow.to_deployment(name="nightjet"),
     )
