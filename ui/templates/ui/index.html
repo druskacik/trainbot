@@ -5,10 +5,10 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>TrainBot - European Sleeper Tracker</title>
-    <!-- Google Fonts -->
+    <!-- IBM Plex Sans — calm, precise, readable -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600&display=swap" rel="stylesheet">
 
     <!-- Static files -->
     {% load static %}
@@ -20,28 +20,30 @@
 </head>
 
 <body>
-    <div class="background-decor"></div>
-    <div class="background-decor-2"></div>
-
     <header class="main-header">
         <div class="logo">
-            <span class="logo-icon">🚆</span>
+            <span class="logo-icon" aria-hidden="true">
+                <svg width="28" height="20" viewBox="0 0 28 20" fill="none" xmlns="http://www.w3.org/2000/svg" focusable="false">
+                    <path d="M2 10h24M2 6h24M2 14h24" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+                </svg>
+            </span>
             <h1>TrainBot</h1>
         </div>
-        <p class="subtitle">Find the lowest European Sleeper fares between your chosen stations</p>
+        <p class="subtitle">Find the lowest fares between your chosen stations</p>
     </header>
 
     <main class="container">
         <section class="search-section">
             <form id="search-form" class="glass-panel">
-                <div class="form-group row-group" style="display: flex; gap: 1rem;">
-                    <div style="flex: 1;">
+                <div id="form-error" class="form-error" hidden role="alert"></div>
+                <div class="row-group">
+                    <div class="form-group">
                         <label for="start-station">From</label>
                         <select id="start-station" name="start_id" class="station-select">
                             <option value="" disabled selected>Loading stations...</option>
                         </select>
                     </div>
-                    <div style="flex: 1;">
+                    <div class="form-group">
                         <label for="end-station">To</label>
                         <select id="end-station" name="end_id" class="station-select">
                             <option value="" disabled selected>Loading stations...</option>
@@ -49,8 +51,8 @@
                     </div>
                 </div>
 
-                <div class="form-group">
-                    <label>Journey Type</label>
+                <fieldset class="form-group" aria-labelledby="journey-type-legend">
+                    <legend id="journey-type-legend" class="fieldset-legend">Journey Type</legend>
                     <div class="radio-group">
                         <input type="radio" id="type-single" name="type" value="single" checked>
                         <label for="type-single" class="radio-label">Single</label>
@@ -58,7 +60,7 @@
                         <input type="radio" id="type-return" name="type" value="return">
                         <label for="type-return" class="radio-label">Return</label>
                     </div>
-                </div>
+                </fieldset>
 
                 <div class="form-group return-params" id="return-params-group">
                     <label for="max-duration">Max Trip Duration (Days)</label>
@@ -67,8 +69,8 @@
                     <div class="helper-text">Find the lowest return prices within this timeframe</div>
                 </div>
 
-                <div class="form-group">
-                    <label>Seat Type</label>
+                <fieldset class="form-group" aria-labelledby="seat-type-legend">
+                    <legend id="seat-type-legend" class="fieldset-legend">Seat Type</legend>
                     <div class="radio-group">
                         <input type="radio" id="seat-any" name="seat_type" value="any" checked>
                         <label for="seat-any" class="radio-label">Any (Cheapest)</label>
@@ -76,7 +78,7 @@
                         <input type="radio" id="seat-couchette" name="seat_type" value="couchette">
                         <label for="seat-couchette" class="radio-label">Couchettes Only</label>
                     </div>
-                </div>
+                </fieldset>
 
                 <button type="submit" class="primary-btn" id="search-btn">
                     <span class="btn-text">Search Lowest Fares</span>
@@ -86,18 +88,18 @@
         </section>
 
         <section class="results-section">
-            <div id="results-container" class="results-grid">
+            <div id="results-container" class="results-grid" aria-live="polite" aria-atomic="true" aria-busy="false">
                 <!-- Results populated by JS -->
             </div>
 
             <div id="empty-state" class="empty-state">
-                <div class="empty-icon">✨</div>
-                <p>Select your criteria and start the search.</p>
+                <div class="empty-icon" aria-hidden="true"></div>
+                <p>Select your criteria and run a search.</p>
             </div>
 
             <div id="no-results-state" class="empty-state hidden">
-                <div class="empty-icon">😕</div>
-                <p>No valid trips found for this criteria.</p>
+                <div class="empty-icon" aria-hidden="true"></div>
+                <p>No trips found for this criteria.</p>
             </div>
         </section>
     </main>

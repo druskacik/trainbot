@@ -9,9 +9,20 @@ document.addEventListener('DOMContentLoaded', () => {
     const resultsContainer = document.getElementById('results-container');
     const emptyState = document.getElementById('empty-state');
     const noResultsState = document.getElementById('no-results-state');
+    const formError = document.getElementById('form-error');
 
     const startStationSelect = document.getElementById('start-station');
     const endStationSelect = document.getElementById('end-station');
+
+    function showFormError(message) {
+        formError.textContent = message;
+        formError.hidden = false;
+    }
+
+    function clearFormError() {
+        formError.textContent = '';
+        formError.hidden = true;
+    }
 
     // Popular stations: Prague, Amsterdam, Brussels, Berlin Hbf, Paris (display order)
     const POPULAR_STATION_IDS = ['5457076', '8400058', '8800104', '8010100', '8700015'];
@@ -70,8 +81,9 @@ document.addEventListener('DOMContentLoaded', () => {
         radio.addEventListener('change', (e) => {
             if (e.target.value === 'return') {
                 returnParamsGroup.classList.remove('hidden');
-                // Ensure layout animation is smooth
-                returnParamsGroup.style.animation = 'fadeIn 0.3s ease-out';
+                if (!window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+                    returnParamsGroup.style.animation = 'fadeIn 0.3s ease-out';
+                }
             } else {
                 returnParamsGroup.classList.add('hidden');
             }
@@ -107,6 +119,7 @@ document.addEventListener('DOMContentLoaded', () => {
             card.className = 'result-card';
             card.href = trip.booking_url;
             card.target = '_blank';
+            card.rel = 'noopener noreferrer';
             card.style.textDecoration = 'none';
             card.style.color = 'inherit';
             card.style.display = 'block';
@@ -119,20 +132,20 @@ document.addEventListener('DOMContentLoaded', () => {
                 <div class="price-tag">${trip.total_price.toFixed(2)} <span style="font-size: 0.5em; font-weight: normal">${currencySymbol}</span></div>
                 
                 <div class="journey-leg">
-                    <div class="leg-label"><span style="font-size: 1.2em">➡️</span> Outbound</div>
+                    <div class="leg-label">Outbound</div>
                     <div class="leg-date">${formatDate(trip.outbound_date)}</div>
-                    ${isReturn ? `<div class="leg-price">Leg Price: ${trip.outbound_price.toFixed(2)} ${currencySymbol}</div>` : ''}
+                    ${isReturn ? `<div class="leg-price">Leg price: ${trip.outbound_price.toFixed(2)} ${currencySymbol}</div>` : ''}
                 </div>
             `;
 
             if (isReturn && trip.return_date) {
                 content += `
                     <div class="journey-leg">
-                        <div class="leg-label"><span style="font-size: 1.2em">⬅️</span> Return</div>
+                        <div class="leg-label">Return</div>
                         <div class="leg-date">${formatDate(trip.return_date)}</div>
-                        <div class="leg-price">Leg Price: ${trip.return_price.toFixed(2)} ${currencySymbol}</div>
+                        <div class="leg-price">Leg price: ${trip.return_price.toFixed(2)} ${currencySymbol}</div>
                     </div>
-                    <div class="trip-duration">⏳ Trip Duration: ${trip.duration_days} days</div>
+                    <div class="trip-duration">Trip duration: ${trip.duration_days} days</div>
                 `;
             }
 
@@ -145,10 +158,12 @@ document.addEventListener('DOMContentLoaded', () => {
     form.addEventListener('submit', async (e) => {
         e.preventDefault();
 
-        // UI Loading State
+        // UI loading state
+        clearFormError();
         emptyState.classList.add('hidden');
         noResultsState.classList.add('hidden');
         resultsContainer.innerHTML = '';
+        resultsContainer.setAttribute('aria-busy', 'true');
 
         searchBtn.disabled = true;
         btnText.textContent = 'Searching...';
@@ -158,11 +173,12 @@ document.addEventListener('DOMContentLoaded', () => {
         const searchParams = new URLSearchParams(formData);
         
         if (!formData.get('start_id') || !formData.get('end_id') || formData.get('start_id') === formData.get('end_id')) {
-            alert('Please select valid and distinct starting and destination stations.');
+            resultsContainer.setAttribute('aria-busy', 'false');
             searchBtn.disabled = false;
             btnText.textContent = 'Search Lowest Fares';
             btnLoader.classList.add('hidden');
             emptyState.classList.remove('hidden');
+            showFormError('Please select valid and distinct departure and destination stations.');
             return;
         }
 
@@ -175,14 +191,15 @@ document.addEventListener('DOMContentLoaded', () => {
                 renderResults(result.routes, isReturn);
             } else {
                 console.error(result.message);
-                alert('An error occurred while fetching trips: ' + result.message);
+                showFormError(result.message || 'An error occurred while fetching trips.');
                 noResultsState.classList.remove('hidden');
             }
         } catch (error) {
             console.error('Fetch error:', error);
+            showFormError('Network error. Please try again.');
             noResultsState.classList.remove('hidden');
         } finally {
-            // Restore UI
+            resultsContainer.setAttribute('aria-busy', 'false');
             searchBtn.disabled = false;
             btnText.textContent = 'Search Lowest Fares';
             btnLoader.classList.add('hidden');
