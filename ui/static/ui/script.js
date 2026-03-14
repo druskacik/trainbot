@@ -10,6 +10,61 @@ document.addEventListener('DOMContentLoaded', () => {
     const emptyState = document.getElementById('empty-state');
     const noResultsState = document.getElementById('no-results-state');
 
+    const startStationSelect = document.getElementById('start-station');
+    const endStationSelect = document.getElementById('end-station');
+
+    // Popular stations: Prague, Amsterdam, Brussels, Berlin Hbf, Paris (display order)
+    const POPULAR_STATION_IDS = ['5457076', '8400058', '8800104', '8010100', '8700015'];
+
+    function buildStationOptionsHTML(stations) {
+        const byId = new Map(stations.map(s => [s.id, s]));
+        const popular = POPULAR_STATION_IDS.map(id => byId.get(id)).filter(Boolean);
+        const rest = stations.filter(s => !POPULAR_STATION_IDS.includes(s.id)).sort((a, b) => a.name.localeCompare(b.name));
+
+        let html = '';
+        if (popular.length > 0) {
+            html += '<optgroup label="Popular">';
+            html += popular.map(s => `<option value="${s.id}">${s.name}</option>`).join('');
+            html += '</optgroup>';
+        }
+        if (rest.length > 0) {
+            html += '<optgroup label="Other stations">';
+            html += rest.map(s => `<option value="${s.id}">${s.name}</option>`).join('');
+            html += '</optgroup>';
+        }
+        return html;
+    }
+
+    // Fetch and populate stations
+    const loadStations = async () => {
+        try {
+            const response = await fetch('/api/stations');
+            const result = await response.json();
+            
+            if (result.status === 'success') {
+                const stations = result.data;
+                const optionsHTML = buildStationOptionsHTML(stations);
+
+                const placeholderStart = '<option value="" disabled>Select departure...</option>';
+                const placeholderEnd = '<option value="" disabled>Select destination...</option>';
+                startStationSelect.innerHTML = placeholderStart + optionsHTML;
+                endStationSelect.innerHTML = placeholderEnd + optionsHTML;
+
+                // Set defaults if available (Prague to Amsterdam)
+                const pragueId = '5457076';
+                const amsterdamId = '8400058';
+                if (stations.some(s => s.id === pragueId)) startStationSelect.value = pragueId;
+                if (stations.some(s => s.id === amsterdamId)) endStationSelect.value = amsterdamId;
+            }
+        } catch (error) {
+            console.error('Failed to load stations:', error);
+            startStationSelect.innerHTML = '<option value="" disabled>Error loading stations</option>';
+            endStationSelect.innerHTML = '<option value="" disabled>Error loading stations</option>';
+        }
+    };
+    
+    loadStations();
+
     // Toggle return params visibility
     typeRadios.forEach(radio => {
         radio.addEventListener('change', (e) => {
@@ -57,7 +112,8 @@ document.addEventListener('DOMContentLoaded', () => {
             card.style.display = 'block';
             card.style.animationDelay = `${index * 0.05}s`;
 
-            const currencySymbol = trip.currency === 'EUR' ? '€' : (trip.currency === 'CZK' ? 'Kč' : trip.currency);
+            const cur = trip.currency.toUpperCase();
+            const currencySymbol = cur === 'EUR' ? '€' : (cur === 'CZK' ? 'Kč' : cur);
 
             let content = `
                 <div class="price-tag">${trip.total_price.toFixed(2)} <span style="font-size: 0.5em; font-weight: normal">${currencySymbol}</span></div>
@@ -100,6 +156,15 @@ document.addEventListener('DOMContentLoaded', () => {
 
         const formData = new FormData(form);
         const searchParams = new URLSearchParams(formData);
+        
+        if (!formData.get('start_id') || !formData.get('end_id') || formData.get('start_id') === formData.get('end_id')) {
+            alert('Please select valid and distinct starting and destination stations.');
+            searchBtn.disabled = false;
+            btnText.textContent = 'Search Lowest Fares';
+            btnLoader.classList.add('hidden');
+            emptyState.classList.remove('hidden');
+            return;
+        }
 
         try {
             const response = await fetch(`/api/search?${searchParams.toString()}`);
@@ -107,7 +172,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
             if (result.status === 'success') {
                 const isReturn = formData.get('type') === 'return';
-                renderResults(result.data, isReturn);
+                renderResults(result.routes, isReturn);
             } else {
                 console.error(result.message);
                 alert('An error occurred while fetching trips: ' + result.message);
