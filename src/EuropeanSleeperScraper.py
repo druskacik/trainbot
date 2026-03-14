@@ -7,6 +7,9 @@ from .RoutesScraper import RoutesScraper
 from .models import Route, Price
 from .ScrapeResult import ScrapeResult, ScrapeFailure
 
+# Cap in-memory failures for long runs to avoid unbounded memory growth
+MAX_FAILURES_STORED = 2000
+
 STATIONS = {
     '8800104': {'name': 'Bruxelles Midi/Brussel Zuid', 'country': '88'},
     '8800210': {'name': 'Antwerpen Centraal', 'country': '88'},
@@ -91,7 +94,8 @@ class EuropeanSleeperScraper(RoutesScraper):
         return response.json()
 
     def scrape(self) -> ScrapeResult:
-        failures = []
+        failures: List[ScrapeFailure] = []
+        total_failures = 0
         total_requests = 0
         start_date = date.today()
         
@@ -140,12 +144,16 @@ class EuropeanSleeperScraper(RoutesScraper):
                             else:
                                 error_msg = str(e)
                                 print(f"Failed to fetch {current_date_str} for train {train_number} ({from_name}->{to_name}): {error_msg}")
-                                failures.append(ScrapeFailure(current_date_str, train_number, error_msg))
+                                total_failures += 1
+                                if len(failures) < MAX_FAILURES_STORED:
+                                    failures.append(ScrapeFailure(current_date_str, train_number, error_msg))
                             continue
                         except Exception as e:
                             error_msg = str(e)
                             print(f"Failed to fetch {current_date_str} for train {train_number} ({from_name}->{to_name}): {error_msg}")
-                            failures.append(ScrapeFailure(current_date_str, train_number, error_msg))
+                            total_failures += 1
+                            if len(failures) < MAX_FAILURES_STORED:
+                                failures.append(ScrapeFailure(current_date_str, train_number, error_msg))
                             continue
                         finally:
                             # Wait 1 second to avoid rate limiting
@@ -225,4 +233,9 @@ class EuropeanSleeperScraper(RoutesScraper):
                         self.save_route_in_batch(route_obj, price_objs, availability)
                 
         self.flush_routes()
-        return ScrapeResult(routes_scraped=self._total_saved, failures=failures, total_requests=total_requests)
+        return ScrapeResult(
+            routes_scraped=self._total_saved,
+            failures=failures,
+            total_requests=total_requests,
+            total_failures=total_failures,
+        )

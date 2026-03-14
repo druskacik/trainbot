@@ -1,7 +1,7 @@
 import os
 from datetime import datetime
 from abc import ABC, abstractmethod
-from typing import List, Tuple, Optional
+from typing import List, Tuple, Optional, Dict
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 from dotenv import load_dotenv
@@ -51,6 +51,8 @@ class RoutesScraper(ABC):
     def save_routes(self, routes_prices_availability: list):
         """Save the list of routes, prices, and availability to the database.
         Each item is (route_obj, prices, availability) where availability is list of (is_couchette, price, currency).
+        Deduplicates (route_id, is_couchette) within the batch to avoid unique constraint violations when
+        the same connection appears for multiple calendar dates (e.g. Nightjet).
         """
         if not routes_prices_availability:
             print("No routes to save.")
@@ -63,6 +65,8 @@ class RoutesScraper(ABC):
             price_count = 0
             availability_count = 0
             seen_route_ids = set()
+            # Track (route_id, is_couchette) added in this batch so we update instead of re-insert
+            batch_availability: Dict[Tuple[str, bool], CurrentAvailability] = {}
 
             for route_obj, prices, availability in routes_prices_availability:
                 if route_obj.id not in seen_route_ids:
@@ -80,6 +84,17 @@ class RoutesScraper(ABC):
                     price_count += 1
 
                 for is_couchette, price, currency in availability:
+                    key = (route_obj.id, is_couchette)
+                    if key in batch_availability:
+                        # Already added in this batch; update in place
+                        existing = batch_availability[key]
+                        existing.price = price
+                        existing.currency = currency
+                        existing.last_scraped_at = now
+                        if price is not None:
+                            existing.last_seen_available_at = now
+                        availability_count += 1
+                        continue
                     existing = session.query(CurrentAvailability).filter_by(
                         route_id=route_obj.id,
                         is_couchette=is_couchette
@@ -92,14 +107,16 @@ class RoutesScraper(ABC):
                             existing.last_seen_available_at = now
                         availability_count += 1
                     else:
-                        session.add(CurrentAvailability(
+                        av = CurrentAvailability(
                             route_id=route_obj.id,
                             is_couchette=is_couchette,
                             price=price,
                             currency=currency,
                             last_scraped_at=now,
                             last_seen_available_at=now if price is not None else None
-                        ))
+                        )
+                        session.add(av)
+                        batch_availability[key] = av
                         availability_count += 1
 
             session.commit()
