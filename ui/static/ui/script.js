@@ -129,7 +129,7 @@ document.addEventListener('DOMContentLoaded', () => {
             const currencySymbol = cur === 'EUR' ? '€' : (cur === 'CZK' ? 'Kč' : cur);
 
             let content = `
-                <div class="price-tag">${trip.total_price.toFixed(2)} <span style="font-size: 0.5em; font-weight: normal">${currencySymbol}</span></div>
+                <div class="price-tag">${trip.total_price.toFixed(2)} <span class="currency">${currencySymbol}</span></div>
                 
                 <div class="journey-leg">
                     <div class="leg-label">Outbound</div>
