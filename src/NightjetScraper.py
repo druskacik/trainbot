@@ -1,4 +1,5 @@
 import time
+import random
 from datetime import date, timedelta, datetime
 from typing import List, Optional, Tuple
 
@@ -146,7 +147,10 @@ class NightjetScraper(RoutesScraper):
         if not all_cities:
             return ScrapeResult(routes_scraped=0, failures=failures, total_requests=0)
 
-        for from_city in all_cities:
+        shuffled_cities = list(all_cities)
+        random.shuffle(shuffled_cities)
+
+        for from_city in shuffled_cities:
             from_id = from_city.get("number")
             if not from_id:
                 continue

@@ -479,7 +479,7 @@ def build_booking_url(
         )
         query_string = urlencode(
             {
-                "cref": "scotty",
+                "cref": "nightjet",
                 "outwardDateTime": outward_datetime,
                 "stationOrigEva": start_station_id,
                 "stationDestEva": end_station_id,
