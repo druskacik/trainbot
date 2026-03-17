@@ -70,6 +70,51 @@ class SearchLogicTest(TestCase):
         self.assertEqual(results[0].latest_price, 29.99)
         self.assertEqual(results[0].latest_currency, "EUR")
 
+    def test_routes_in_the_past_are_filtered_out(self):
+        if not _tables_exist():
+            self.skipTest("routes and current_availability tables required; run Alembic on test DB")
+
+        now = timezone.now()
+        future_route = Route.objects.create(
+            id="test-route-future",
+            source="test",
+            train_number="452",
+            departure_station="PRAHA HL. N.",
+            arrival_station="Amsterdam CS",
+            travel_date=now.date(),
+            departure_time=now + timezone.timedelta(hours=2),
+            arrival_time=now + timezone.timedelta(hours=12),
+        )
+        past_route = Route.objects.create(
+            id="test-route-past",
+            source="test",
+            train_number="453",
+            departure_station="PRAHA HL. N.",
+            arrival_station="Amsterdam CS",
+            travel_date=now.date(),
+            departure_time=now - timezone.timedelta(hours=2),
+            arrival_time=now + timezone.timedelta(hours=8),
+        )
+
+        for route in (future_route, past_route):
+            CurrentAvailability.objects.create(
+                route=route,
+                is_couchette=False,
+                price=39.99,
+                currency="EUR",
+                last_scraped_at=now,
+                last_seen_available_at=now,
+            )
+
+        results = list(
+            _get_routes_with_best_price(
+                ["PRAHA HL. N."], ["Amsterdam CS"], "seat"
+            )
+        )
+
+        self.assertEqual(len(results), 1)
+        self.assertEqual(results[0].id, future_route.id)
+
 
 class CityCatalogTest(SimpleTestCase):
     def test_prague_aliases_include_provider_variants(self):

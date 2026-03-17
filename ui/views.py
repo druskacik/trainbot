@@ -2,6 +2,7 @@ from django.db.models import Min, OuterRef, Subquery
 from django.http import JsonResponse
 from django.shortcuts import render
 from django.views.decorators.http import require_GET
+from django.utils import timezone
 
 from .cities import (
     CITY_CATALOG,
@@ -22,6 +23,7 @@ def _get_routes_with_best_price(dep_station_names, arr_station_names, seat_type)
     base_routes = Route.objects.filter(
         departure_station__in=dep_station_names,
         arrival_station__in=arr_station_names,
+        departure_time__gte=timezone.now(),
     )
 
     if seat_type == 'seat':
