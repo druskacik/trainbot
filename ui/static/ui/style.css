@@ -253,16 +253,23 @@ h1 {
     padding: var(--space-3xl);
     box-shadow: var(--shadow-panel);
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-    gap: var(--space-2xl);
+    grid-template-columns: minmax(0, 1fr);
+    gap: var(--space-xl);
     align-items: flex-start;
     animation: fadeInUp 0.7s var(--ease-out-quart) 0.15s both;
 }
 
+.glass-panel > .row-group,
+.glass-panel > fieldset,
+.glass-panel > .return-params,
+.glass-panel > .primary-btn {
+    grid-column: 1 / -1;
+}
+
 .glass-panel > .row-group { animation: fadeInUp 0.5s var(--ease-out-quart) 0.28s both; }
-.glass-panel > .form-group:nth-of-type(1) { animation: fadeInUp 0.5s var(--ease-out-quart) 0.38s both; }
-.glass-panel > .form-group:nth-of-type(2) { animation: fadeInUp 0.5s var(--ease-out-quart) 0.48s both; }
-.glass-panel > .form-group:nth-of-type(3) { animation: fadeInUp 0.5s var(--ease-out-quart) 0.58s both; }
+.glass-panel > fieldset:nth-of-type(1) { animation: fadeInUp 0.5s var(--ease-out-quart) 0.38s both; }
+.glass-panel > .return-params { animation: fadeInUp 0.5s var(--ease-out-quart) 0.48s both; }
+.glass-panel > fieldset:nth-of-type(2) { animation: fadeInUp 0.5s var(--ease-out-quart) 0.58s both; }
 .glass-panel > .primary-btn { animation: fadeInUp 0.5s var(--ease-out-quart) 0.7s both; }
 
 .form-group {
@@ -407,6 +414,10 @@ fieldset {
 .helper-text {
     font-size: 0.75rem;
     color: var(--text-muted);
+}
+
+.return-params.is-visible {
+    animation: fadeIn 0.25s var(--ease-out-quart);
 }
 
 /* Primary Button – single accent, confident (tinted white) */
@@ -652,16 +663,31 @@ fieldset {
     border: 1px solid var(--panel-border);
     border-radius: var(--radius-xl);
     color: var(--text-muted);
+    display: grid;
+    justify-items: center;
+    gap: var(--space-sm);
     animation: fadeIn 0.5s ease-out;
 }
 
 .empty-icon {
-    width: 2rem;
-    height: 2px;
-    margin: 0 auto 1rem;
-    background: var(--text-muted);
-    opacity: 0.4;
-    border-radius: 1px;
+    width: 2.75rem;
+    height: 2.75rem;
+    border-radius: 999px;
+    border: 1px solid var(--panel-border);
+    background:
+        linear-gradient(var(--panel-bg), var(--panel-bg)) padding-box,
+        linear-gradient(135deg, transparent 48%, var(--accent) 50%, transparent 52%) border-box;
+    opacity: 0.9;
+}
+
+.empty-state p {
+    max-width: 34ch;
+    line-height: 1.5;
+}
+
+.empty-state span {
+    color: var(--text-main);
+    font-weight: 700;
 }
 
 /* In-page error (no alert) */
@@ -728,7 +754,8 @@ fieldset {
     .glass-panel > .primary-btn,
     .result-card,
     .empty-state,
-    .form-error {
+    .form-error,
+    .return-params.is-visible {
         animation: none;
     }
 
@@ -787,6 +814,11 @@ fieldset {
         grid-template-columns: 1fr;
         padding: var(--space-xl);
         border-radius: var(--radius-lg);
+    }
+
+    .glass-panel > .row-group {
+        flex-direction: column;
+        gap: var(--space-md);
     }
 
     .results-grid {

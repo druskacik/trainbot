@@ -226,11 +226,10 @@ document.addEventListener('DOMContentLoaded', () => {
         radio.addEventListener('change', (e) => {
             if (e.target.value === 'return') {
                 returnParamsGroup.classList.remove('hidden');
-                if (!window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
-                    returnParamsGroup.style.animation = 'fadeIn 0.3s ease-out';
-                }
+                returnParamsGroup.classList.add('is-visible');
             } else {
                 returnParamsGroup.classList.add('hidden');
+                returnParamsGroup.classList.remove('is-visible');
             }
         });
     });
@@ -238,6 +237,8 @@ document.addEventListener('DOMContentLoaded', () => {
     // Initial check
     if (document.querySelector('input[name="type"]:checked').value === 'single') {
         returnParamsGroup.classList.add('hidden');
+    } else {
+        returnParamsGroup.classList.add('is-visible');
     }
 
     // Format Date helper
