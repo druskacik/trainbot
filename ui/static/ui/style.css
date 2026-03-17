@@ -1,4 +1,5 @@
-/* Design tokens: single accent, calm & grounded (TrainBot brand) — bolder hierarchy */
+/* ========== Design tokens ========== */
+/* Single accent, calm & grounded (TrainBot brand) — bolder hierarchy */
 :root {
     /* Typography */
     --font-display: 'Syne', system-ui, sans-serif;
@@ -20,97 +21,136 @@
     --transition-base: 0.2s ease;
     --ease-out-quart: cubic-bezier(0.25, 1, 0.5, 1);
 
-    /* Light theme (default) — ecological, calm, paper-like */
-    --bg-color: #f4f3ee;
-    --text-main: #1a1f24;
-    --text-muted: #4d5760;
-    --panel-bg: #ffffff;
-    --panel-border: rgba(0, 0, 0, 0.07);
-    --input-bg: #ebeae5;
-    --input-border: rgba(0, 0, 0, 0.1);
-    --input-border-hover: rgba(0, 0, 0, 0.18);
-    /* Single accent: grounded teal (rail, nature, calm) */
-    --accent: #1a6b5c;
-    --accent-hover: #207d6b;
-    --accent-soft: rgba(26, 107, 92, 0.12);
-    --card-bg: #ffffff;
+    /* Light palette (default) — ecological, calm, paper-like */
+    --_light-bg: #f4f3ee;
+    --_light-text: #1a1f24;
+    --_light-muted: #4d5760;
+    --_light-panel: #ffffff;
+    --_light-panel-border: rgba(0, 0, 0, 0.07);
+    --_light-input-bg: #ebeae5;
+    --_light-input-border: rgba(0, 0, 0, 0.1);
+    --_light-input-border-hover: rgba(0, 0, 0, 0.18);
+    --_light-accent: #1a6b5c;
+    --_light-accent-hover: #207d6b;
+    --_light-accent-soft: rgba(26, 107, 92, 0.12);
+    --_light-shadow-subtle: 0 1px 2px rgba(0, 0, 0, 0.06);
+    --_light-shadow-panel: 0 8px 28px rgba(0, 0, 0, 0.07);
+    --_light-shadow-card: 0 4px 16px rgba(0, 0, 0, 0.06);
+    --_light-shadow-btn-hover: 0 6px 24px rgba(0, 0, 0, 0.12);
+    --_light-backdrop: rgba(15, 20, 24, 0.45);
+    --_light-select-arrow: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12' fill='none'%3E%3Cpath d='M2.5 4.5L6 8L9.5 4.5' stroke='%234d5760' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
+
+    /* Dark palette */
+    --_dark-bg: #141a1f;
+    --_dark-text: #e8eef4;
+    --_dark-muted: #7a8592;
+    --_dark-panel: #1a2229;
+    --_dark-panel-border: rgba(255, 255, 255, 0.07);
+    --_dark-input-bg: rgba(0, 0, 0, 0.25);
+    --_dark-input-border: rgba(255, 255, 255, 0.08);
+    --_dark-input-border-hover: rgba(255, 255, 255, 0.14);
+    --_dark-accent: #2e7d6e;
+    --_dark-accent-hover: #389a88;
+    --_dark-accent-soft: rgba(46, 125, 110, 0.15);
+    --_dark-shadow-subtle: 0 1px 3px rgba(0, 0, 0, 0.3);
+    --_dark-shadow-panel: 0 8px 32px rgba(0, 0, 0, 0.25);
+    --_dark-shadow-card: 0 4px 20px rgba(0, 0, 0, 0.2);
+    --_dark-shadow-btn-hover: 0 6px 24px rgba(0, 0, 0, 0.4);
+    --_dark-backdrop: rgba(0, 0, 0, 0.6);
+    --_dark-select-arrow: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12' fill='none'%3E%3Cpath d='M2.5 4.5L6 8L9.5 4.5' stroke='%237a8592' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
+
+    /* Semantic tokens (default = light) */
+    --bg-color: var(--_light-bg);
+    --text-main: var(--_light-text);
+    --text-muted: var(--_light-muted);
+    --panel-bg: var(--_light-panel);
+    --panel-border: var(--_light-panel-border);
+    --input-bg: var(--_light-input-bg);
+    --input-border: var(--_light-input-border);
+    --input-border-hover: var(--_light-input-border-hover);
+    --accent: var(--_light-accent);
+    --accent-hover: var(--_light-accent-hover);
+    --accent-soft: var(--_light-accent-soft);
+    --card-bg: var(--_light-panel);
     --focus-ring: 0 0 0 2px var(--accent);
-    --shadow-subtle: 0 1px 2px rgba(0, 0, 0, 0.06);
-    --shadow-panel: 0 8px 28px rgba(0, 0, 0, 0.07);
-    --shadow-card: 0 4px 16px rgba(0, 0, 0, 0.06);
-    --shadow-btn-hover: 0 6px 24px rgba(0, 0, 0, 0.12);
+    --shadow-subtle: var(--_light-shadow-subtle);
+    --shadow-panel: var(--_light-shadow-panel);
+    --shadow-card: var(--_light-shadow-card);
+    --shadow-btn-hover: var(--_light-shadow-btn-hover);
+    --backdrop-overlay: var(--_light-backdrop);
+    --select-arrow-icon: var(--_light-select-arrow);
 }
 
 /* Dark theme: only when user prefers dark or data-theme="dark" */
 @media (prefers-color-scheme: dark) {
     :root:not([data-theme="light"]) {
-        --bg-color: #141a1f;
-        --text-main: #e8eef4;
-        --text-muted: #7a8592;
-        --panel-bg: #1a2229;
-        --panel-border: rgba(255, 255, 255, 0.07);
-        --input-bg: rgba(0, 0, 0, 0.25);
-        --input-border: rgba(255, 255, 255, 0.08);
-        --input-border-hover: rgba(255, 255, 255, 0.14);
-        --accent: #2e7d6e;
-        --accent-hover: #389a88;
-        --accent-soft: rgba(46, 125, 110, 0.15);
-        --card-bg: #1a2229;
+        --bg-color: var(--_dark-bg);
+        --text-main: var(--_dark-text);
+        --text-muted: var(--_dark-muted);
+        --panel-bg: var(--_dark-panel);
+        --panel-border: var(--_dark-panel-border);
+        --input-bg: var(--_dark-input-bg);
+        --input-border: var(--_dark-input-border);
+        --input-border-hover: var(--_dark-input-border-hover);
+        --accent: var(--_dark-accent);
+        --accent-hover: var(--_dark-accent-hover);
+        --accent-soft: var(--_dark-accent-soft);
+        --card-bg: var(--_dark-panel);
         --focus-ring: 0 0 0 2px var(--accent);
-        --shadow-subtle: 0 1px 3px rgba(0, 0, 0, 0.3);
-        --shadow-panel: 0 8px 32px rgba(0, 0, 0, 0.25);
-        --shadow-card: 0 4px 20px rgba(0, 0, 0, 0.2);
-        --shadow-btn-hover: 0 6px 24px rgba(0, 0, 0, 0.4);
-    }
-
-    .station-select {
-        background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12' fill='none'%3E%3Cpath d='M2.5 4.5L6 8L9.5 4.5' stroke='%237a8592' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
+        --shadow-subtle: var(--_dark-shadow-subtle);
+        --shadow-panel: var(--_dark-shadow-panel);
+        --shadow-card: var(--_dark-shadow-card);
+        --shadow-btn-hover: var(--_dark-shadow-btn-hover);
+        --backdrop-overlay: var(--_dark-backdrop);
+        --select-arrow-icon: var(--_dark-select-arrow);
     }
 }
 
 [data-theme="light"] {
-    --bg-color: #f4f3ee;
-    --text-main: #1a1f24;
-    --text-muted: #4d5760;
-    --panel-bg: #ffffff;
-    --panel-border: rgba(0, 0, 0, 0.07);
-    --input-bg: #ebeae5;
-    --input-border: rgba(0, 0, 0, 0.1);
-    --input-border-hover: rgba(0, 0, 0, 0.18);
-    --accent: #1a6b5c;
-    --accent-hover: #207d6b;
-    --accent-soft: rgba(26, 107, 92, 0.12);
-    --card-bg: #ffffff;
+    --bg-color: var(--_light-bg);
+    --text-main: var(--_light-text);
+    --text-muted: var(--_light-muted);
+    --panel-bg: var(--_light-panel);
+    --panel-border: var(--_light-panel-border);
+    --input-bg: var(--_light-input-bg);
+    --input-border: var(--_light-input-border);
+    --input-border-hover: var(--_light-input-border-hover);
+    --accent: var(--_light-accent);
+    --accent-hover: var(--_light-accent-hover);
+    --accent-soft: var(--_light-accent-soft);
+    --card-bg: var(--_light-panel);
     --focus-ring: 0 0 0 2px var(--accent);
-    --shadow-subtle: 0 1px 2px rgba(0, 0, 0, 0.06);
-    --shadow-panel: 0 8px 28px rgba(0, 0, 0, 0.07);
-    --shadow-card: 0 4px 16px rgba(0, 0, 0, 0.06);
-    --shadow-btn-hover: 0 6px 24px rgba(0, 0, 0, 0.12);
+    --shadow-subtle: var(--_light-shadow-subtle);
+    --shadow-panel: var(--_light-shadow-panel);
+    --shadow-card: var(--_light-shadow-card);
+    --shadow-btn-hover: var(--_light-shadow-btn-hover);
+    --backdrop-overlay: var(--_light-backdrop);
+    --select-arrow-icon: var(--_light-select-arrow);
 }
 
 [data-theme="dark"] {
-    --bg-color: #141a1f;
-    --text-main: #e8eef4;
-    --text-muted: #7a8592;
-    --panel-bg: #1a2229;
-    --panel-border: rgba(255, 255, 255, 0.07);
-    --input-bg: rgba(0, 0, 0, 0.25);
-    --input-border: rgba(255, 255, 255, 0.08);
-    --input-border-hover: rgba(255, 255, 255, 0.14);
-    --accent: #2e7d6e;
-    --accent-hover: #389a88;
-    --accent-soft: rgba(46, 125, 110, 0.15);
-    --card-bg: #1a2229;
+    --bg-color: var(--_dark-bg);
+    --text-main: var(--_dark-text);
+    --text-muted: var(--_dark-muted);
+    --panel-bg: var(--_dark-panel);
+    --panel-border: var(--_dark-panel-border);
+    --input-bg: var(--_dark-input-bg);
+    --input-border: var(--_dark-input-border);
+    --input-border-hover: var(--_dark-input-border-hover);
+    --accent: var(--_dark-accent);
+    --accent-hover: var(--_dark-accent-hover);
+    --accent-soft: var(--_dark-accent-soft);
+    --card-bg: var(--_dark-panel);
     --focus-ring: 0 0 0 2px var(--accent);
-    --shadow-panel: 0 8px 32px rgba(0, 0, 0, 0.25);
-    --shadow-card: 0 4px 20px rgba(0, 0, 0, 0.2);
-    --shadow-btn-hover: 0 6px 24px rgba(0, 0, 0, 0.4);
+    --shadow-subtle: var(--_dark-shadow-subtle);
+    --shadow-panel: var(--_dark-shadow-panel);
+    --shadow-card: var(--_dark-shadow-card);
+    --shadow-btn-hover: var(--_dark-shadow-btn-hover);
+    --backdrop-overlay: var(--_dark-backdrop);
+    --select-arrow-icon: var(--_dark-select-arrow);
 }
 
-[data-theme="dark"] .station-select {
-    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12' fill='none'%3E%3Cpath d='M2.5 4.5L6 8L9.5 4.5' stroke='%237a8592' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
-}
-
+/* ========== Reset & base ========== */
 * {
     box-sizing: border-box;
     margin: 0;
@@ -131,7 +171,7 @@ body {
 
 /* No decorative gradients — calm, grounded (brand: minimalism) */
 
-/* Header — hero focal point, dramatic scale */
+/* ========== Header ========== */
 .main-header {
     margin-top: clamp(4rem, 10vw, 6.5rem);
     text-align: center;
@@ -185,7 +225,7 @@ h1 {
     margin-inline: auto;
 }
 
-/* Main Container — generous rhythm between sections */
+/* ========== Layout & form ========== */
 .container {
     width: 100%;
     max-width: 1000px;
@@ -231,12 +271,18 @@ h1 {
     gap: var(--space-md);
 }
 
-label {
+label,
+.fieldset-legend {
     font-size: 0.8125rem;
     font-weight: 600;
     color: var(--text-muted);
     text-transform: uppercase;
     letter-spacing: 0.06em;
+}
+
+.fieldset-legend {
+    margin-bottom: var(--space-md);
+    display: block;
 }
 
 fieldset {
@@ -246,45 +292,44 @@ fieldset {
     min-width: 0;
 }
 
-.fieldset-legend {
-    font-size: 0.8125rem;
-    font-weight: 600;
-    color: var(--text-muted);
-    text-transform: uppercase;
-    letter-spacing: 0.06em;
-    margin-bottom: var(--space-md);
-    display: block;
+/* ========== Form controls ========== */
+/* Shared base: station-select and num-input */
+.station-select,
+.num-input {
+    background: var(--input-bg);
+    border: 1px solid var(--input-border);
+    border-radius: var(--radius-md);
+    color: var(--text-main);
+    font-family: inherit;
+    font-size: 1rem;
+    outline: none;
+    transition: border-color var(--transition-base), box-shadow var(--transition-base);
+}
+
+.station-select:hover,
+.num-input:hover {
+    border-color: var(--input-border-hover);
+}
+
+.station-select:focus,
+.station-select:focus-visible,
+.num-input:focus,
+.num-input:focus-visible {
+    border-color: var(--accent);
+    box-shadow: var(--focus-ring);
 }
 
 /* Station Select (FROM / TO) – match radio-group and num-input */
 .station-select {
     width: 100%;
-    background: var(--input-bg);
-    border: 1px solid var(--input-border);
-    border-radius: var(--radius-md);
     padding: var(--space-md) 2.25rem var(--space-md) var(--space-lg);
-    color: var(--text-main);
-    font-family: inherit;
-    font-size: 1rem;
     font-weight: 500;
-    outline: none;
     cursor: pointer;
     appearance: none;
     -webkit-appearance: none;
-    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12' fill='none'%3E%3Cpath d='M2.5 4.5L6 8L9.5 4.5' stroke='%234d5760' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
+    background-image: var(--select-arrow-icon);
     background-repeat: no-repeat;
     background-position: right var(--space-lg) center;
-    transition: border-color var(--transition-base), box-shadow var(--transition-base);
-}
-
-.station-select:hover {
-    border-color: var(--input-border-hover);
-}
-
-.station-select:focus,
-.station-select:focus-visible {
-    border-color: var(--accent);
-    box-shadow: var(--focus-ring);
 }
 
 .station-select option {
@@ -349,27 +394,14 @@ fieldset {
     outline: none;
 }
 
-/* Number Input */
 .num-input {
-    background: var(--input-bg);
-    border: 1px solid var(--input-border);
-    border-radius: var(--radius-md);
     padding: var(--space-md) var(--space-lg);
-    color: var(--text-main);
-    font-family: inherit;
-    font-size: 1rem;
-    outline: none;
-    transition: border-color var(--transition-base), box-shadow var(--transition-base);
 }
 
-.num-input:hover {
-    border-color: var(--input-border-hover);
-}
-
-.num-input:focus,
-.num-input:focus-visible {
-    border-color: var(--accent);
-    box-shadow: var(--focus-ring);
+.num-input:disabled,
+.station-select:disabled {
+    opacity: 0.7;
+    cursor: not-allowed;
 }
 
 .helper-text {
@@ -407,6 +439,7 @@ fieldset {
 
 .primary-btn:active {
     background: var(--accent);
+    transform: scale(0.98);
 }
 
 .primary-btn:focus-visible {
@@ -420,6 +453,10 @@ fieldset {
     transform: none;
 }
 
+.primary-btn:disabled:active {
+    transform: none;
+}
+
 /* Custom Loader */
 .btn-loader {
     width: 20px;
@@ -430,7 +467,7 @@ fieldset {
     animation: spin 0.8s linear infinite;
 }
 
-/* Results Section */
+/* ========== Results ========== */
 .results-grid {
     display: grid;
     grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
@@ -445,20 +482,36 @@ fieldset {
     padding: var(--space-xl);
     position: relative;
     overflow: hidden;
-    transition: box-shadow 0.25s var(--ease-out-quart), border-color 0.2s var(--ease-out-quart);
+    transition: box-shadow 0.25s var(--ease-out-quart), border-color 0.2s var(--ease-out-quart), transform 0.15s var(--ease-out-quart);
     animation: fadeInUp 0.5s var(--ease-out-quart) both;
+}
+
+.result-card:is(a),
+.result-card.is-clickable {
+    display: block;
+    color: inherit;
+    text-decoration: none;
+    cursor: pointer;
+}
+
+.result-card:is(article) {
+    transition: box-shadow 0.25s var(--ease-out-quart), border-color 0.2s var(--ease-out-quart);
 }
 
 .result-card:hover {
     box-shadow: var(--shadow-card);
     border-color: var(--input-border-hover);
-    transition: box-shadow 0.25s var(--ease-out-quart), border-color 0.2s var(--ease-out-quart);
 }
 
 .result-card:focus-visible {
     outline: none;
     box-shadow: var(--focus-ring);
     border-color: var(--accent);
+}
+
+.result-card:is(a):active,
+.result-card.is-clickable:active {
+    transform: scale(0.99);
 }
 
 .price-tag {
@@ -494,10 +547,23 @@ fieldset {
     text-transform: uppercase;
     color: var(--text-muted);
     letter-spacing: 0.1em;
+}
+
+.leg-label {
     margin-bottom: 0.25rem;
-    display: flex;
+}
+
+.provider-pill {
+    display: inline-flex;
     align-items: center;
-    gap: 0.5rem;
+    justify-content: center;
+    padding: 0.35rem 0.65rem;
+    border-radius: 999px;
+    background: var(--accent-soft);
+    color: var(--accent);
+    font-size: 0.75rem;
+    font-weight: 700;
+    white-space: nowrap;
 }
 
 .leg-date {
@@ -511,9 +577,24 @@ fieldset {
     margin-top: 0.25rem;
 }
 
+.result-meta {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--space-sm);
+    flex-wrap: wrap;
+    margin-top: var(--space-lg);
+}
+
+.provider-summary {
+    display: flex;
+    align-items: center;
+    gap: var(--space-sm);
+    flex-wrap: wrap;
+}
+
 .trip-duration {
     display: inline-block;
-    margin-top: var(--space-lg);
     padding: var(--space-xs) var(--space-md);
     background: var(--input-bg);
     border-radius: 20px;
@@ -521,7 +602,45 @@ fieldset {
     color: var(--text-muted);
 }
 
-/* States */
+.trip-note {
+    display: inline-block;
+    padding: var(--space-xs) var(--space-md);
+    background: var(--accent-soft);
+    border-radius: 20px;
+    font-size: 0.8rem;
+    color: var(--accent);
+}
+
+.booking-action {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border: 1px solid var(--input-border);
+    border-radius: 999px;
+    padding: 0.55rem 0.9rem;
+    font: inherit;
+    font-weight: 600;
+    text-decoration: none;
+    background: var(--accent);
+    color: var(--panel-bg);
+    border-color: var(--accent);
+    transition: border-color var(--transition-base), box-shadow var(--transition-base), background-color var(--transition-base), color var(--transition-base), transform 0.15s var(--ease-out-quart);
+    margin-left: auto;
+}
+
+.booking-action:hover,
+.booking-action:focus-visible {
+    background: var(--accent-hover);
+    border-color: var(--accent-hover);
+    box-shadow: var(--focus-ring);
+    outline: none;
+}
+
+.booking-action:active {
+    transform: scale(0.98);
+}
+
+/* ========== States ========== */
 .hidden {
     display: none !important;
 }
@@ -561,7 +680,7 @@ fieldset {
     display: none !important;
 }
 
-/* Animations */
+/* ========== Animations ========== */
 @keyframes fadeIn {
     from {
         opacity: 0;
@@ -600,7 +719,7 @@ fieldset {
     }
 }
 
-/* Reduced motion */
+/* ========== Reduced motion ========== */
 @media (prefers-reduced-motion: reduce) {
     .main-header,
     .glass-panel,
@@ -612,9 +731,28 @@ fieldset {
     .form-error {
         animation: none;
     }
+
+    .btn-loader {
+        animation: none;
+        border-top-color: transparent;
+        border-right-color: rgba(255, 255, 255, 0.5);
+    }
+
+    .result-card:is(a):active,
+    .result-card.is-clickable:active {
+        transform: none;
+    }
+
+    .primary-btn:active {
+        transform: none;
+    }
+
+    .booking-action:active {
+        transform: none;
+    }
 }
 
-/* Responsive */
+/* ========== Responsive ========== */
 @media (max-width: 768px) {
     .main-header {
         margin-top: var(--space-2xl);
@@ -661,6 +799,15 @@ fieldset {
         padding: var(--space-xl);
     }
 
+    .result-meta {
+        align-items: flex-start;
+        flex-direction: column;
+    }
+
+    .booking-action {
+        margin-left: 0;
+    }
+
     .empty-state {
         padding: var(--space-2xl) var(--space-xl);
         border-radius: var(--radius-lg);
@@ -683,7 +830,7 @@ fieldset {
 
     .glass-panel {
         padding: var(--space-xl) var(--space-lg);
-        border-radius: 14px;
+        border-radius: var(--radius-lg);
     }
 
     .row-group {

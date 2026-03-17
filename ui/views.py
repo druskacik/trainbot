@@ -1,29 +1,19 @@
+from django.db.models import Min, OuterRef, Subquery
 from django.http import JsonResponse
-from django.db.models import Subquery, OuterRef, Min
 from django.shortcuts import render
 from django.views.decorators.http import require_GET
-from .models import Route, CurrentAvailability
 
-# Map EuropeanSleeper API ID to all known database station representations
-STATIONS = {
-    '8800104': {'name': 'Bruxelles Midi/Brussel Zuid', 'db_names': ['Bruxelles Midi']},
-    '8800210': {'name': 'Antwerpen Centraal', 'db_names': ['Antwerpen-Centraal']},
-    '8700015': {'name': 'Paris-Nord', 'db_names': ['Paris-Nord']},
-    '8400526': {'name': 'Roosendaal', 'db_names': ['Roosendaal']},
-    '8400530': {'name': 'Rotterdam Centraal', 'db_names': ['Rotterdam CS']},
-    '8400280': {'name': 'Den Haag HS', 'db_names': ['Den Haag HS']},
-    '8400058': {'name': 'Amsterdam Centraal', 'db_names': ['Amsterdam CS']},
-    '8400055': {'name': 'Amersfoort Centraal', 'db_names': ['Amersfoort']},
-    '8400173': {'name': 'Deventer', 'db_names': ['Deventer']},
-    '8020401': {'name': 'Hamburg Harburg', 'db_names': ['Hamburg Harburg']},
-    '8010110': {'name': 'Berlin Ostbahnhof', 'db_names': ['Berlin Ostbahnnhof']},
-    '8010100': {'name': 'Berlin Hbf', 'db_names': ['Berlin Hbf', 'Berlin-Gesundbrunnen']},
-    '8001305': {'name': 'Dresden Hbf', 'db_names': ['Dresden Hbf', 'Dresden-Neustadt']},
-    '8001311': {'name': 'Bad Schandau', 'db_names': ['Bad Schandau']},
-    '5455659': {'name': 'Děčín hl.n.', 'db_names': ['DECIN']},
-    '5453179': {'name': 'Ústí nad Labem hl.n.', 'db_names': ['USTI NAD LABEM']},
-    '5457076': {'name': 'Praha hl.n.', 'db_names': ['PRAHA HL. N.']}
-}
+from .cities import (
+    CITY_CATALOG,
+    CITY_CONNECTIONS,
+    EUROPEAN_SLEEPER,
+    build_booking_url,
+    get_city,
+    get_city_options,
+    get_provider_display_name,
+    get_station_names,
+)
+from .models import CurrentAvailability, Route
 
 
 def _get_routes_with_best_price(dep_station_names, arr_station_names, seat_type):
@@ -89,11 +79,40 @@ def index(request):
 
 @require_GET
 def get_stations(request):
-    stations_list = [
-        {'id': st_id, 'name': info['name']}
-        for st_id, info in STATIONS.items()
-    ]
-    return JsonResponse({'status': 'success', 'data': stations_list})
+    return JsonResponse(
+        {
+            'status': 'success',
+            'data': get_city_options(),
+            'connections': CITY_CONNECTIONS,
+        }
+    )
+
+
+def _serialize_route_leg(route, start_id, end_id):
+    start_city = get_city(start_id) or {}
+    end_city = get_city(end_id) or {}
+    booking_url = build_booking_url(
+        route.source,
+        start_id,
+        end_id,
+        route.travel_date,
+        route.departure_time,
+    )
+
+    return {
+        'date': route.travel_date.isoformat(),
+        'price': route.latest_price,
+        'currency': route.latest_currency,
+        'provider': route.source,
+        'provider_name': get_provider_display_name(route.source),
+        'booking_url': booking_url,
+        'booking_mode': 'direct',
+        'booking_details': {
+            'from_city': start_city.get('name'),
+            'to_city': end_city.get('name'),
+            'travel_date': route.travel_date.isoformat(),
+        },
+    }
 
 
 @require_GET
@@ -108,12 +127,12 @@ def search_trips(request):
         if not start_id or not end_id:
             return JsonResponse({'status': 'error', 'message': 'Missing start_id or end_id parameters.'}, status=400)
 
-        if start_id not in STATIONS or end_id not in STATIONS:
-            return JsonResponse({'status': 'error', 'message': 'Invalid station IDs provided.'}, status=400)
+        if start_id not in CITY_CATALOG or end_id not in CITY_CATALOG:
+            return JsonResponse({'status': 'error', 'message': 'Invalid city IDs provided.'}, status=400)
 
         seat_type_normalized = seat_type if seat_type in ('seat', 'couchette', 'any') else 'any'
-        outbound_dep = STATIONS[start_id]['db_names']
-        outbound_arr = STATIONS[end_id]['db_names']
+        outbound_dep = get_station_names(start_id)
+        outbound_arr = get_station_names(end_id)
 
         outbound_routes = _get_routes_with_best_price(outbound_dep, outbound_arr, seat_type_normalized)
 
@@ -121,24 +140,22 @@ def search_trips(request):
 
         if trip_type == 'single':
             for route in outbound_routes:
-                date_str = route.travel_date.strftime('%Y-%m-%d')
-                booking_url = (
-                    f"https://booking.europeansleeper.eu/en?"
-                    f"departureStation={start_id}&arrivalStation={end_id}"
-                    f"&departureDate={date_str}"
-                    f"&bicycleCount=0&petsCount=0&passengerTypes=72"
-                )
+                leg = _serialize_route_leg(route, start_id, end_id)
                 results.append({
-                    'outbound_date': route.travel_date.isoformat(),
-                    'outbound_price': route.latest_price,
-                    'currency': route.latest_currency,
+                    'outbound_date': leg['date'],
+                    'outbound_price': leg['price'],
+                    'currency': leg['currency'],
                     'total_price': route.latest_price,
-                    'booking_url': booking_url,
+                    'outbound_provider': leg['provider'],
+                    'outbound_provider_name': leg['provider_name'],
+                    'outbound_booking_url': leg['booking_url'],
+                    'outbound_leg': leg,
+                    'primary_booking_url': leg['booking_url'],
                 })
         else:
             max_duration = int(max_duration_str) if max_duration_str.isdigit() else 30
-            return_dep = STATIONS[end_id]['db_names']
-            return_arr = STATIONS[start_id]['db_names']
+            return_dep = get_station_names(end_id)
+            return_arr = get_station_names(start_id)
             return_routes = list(_get_routes_with_best_price(return_dep, return_arr, seat_type_normalized))
 
             for out_route in outbound_routes:
@@ -149,23 +166,40 @@ def search_trips(request):
 
                 if valid_returns:
                     best_return = min(valid_returns, key=lambda r: r.latest_price)
-                    out_date_str = out_route.travel_date.strftime('%Y-%m-%d')
-                    ret_date_str = best_return.travel_date.strftime('%Y-%m-%d')
-                    booking_url = (
-                        f"https://booking.europeansleeper.eu/en?"
-                        f"departureStation={start_id}&arrivalStation={end_id}"
-                        f"&departureDate={out_date_str}&returnDate={ret_date_str}"
-                        f"&bicycleCount=0&petsCount=0&passengerTypes=72"
-                    )
+                    outbound_leg = _serialize_route_leg(out_route, start_id, end_id)
+                    return_leg = _serialize_route_leg(best_return, end_id, start_id)
+                    combined_booking_url = None
+                    if (
+                        outbound_leg['provider'] == EUROPEAN_SLEEPER
+                        and return_leg['provider'] == EUROPEAN_SLEEPER
+                    ):
+                        combined_booking_url = build_booking_url(
+                            EUROPEAN_SLEEPER,
+                            start_id,
+                            end_id,
+                            out_route.travel_date,
+                            return_date=best_return.travel_date,
+                        )
+
                     results.append({
-                        'outbound_date': out_route.travel_date.isoformat(),
-                        'outbound_price': out_route.latest_price,
-                        'return_date': best_return.travel_date.isoformat(),
-                        'return_price': best_return.latest_price,
+                        'outbound_date': outbound_leg['date'],
+                        'outbound_price': outbound_leg['price'],
+                        'outbound_provider': outbound_leg['provider'],
+                        'outbound_provider_name': outbound_leg['provider_name'],
+                        'outbound_booking_url': outbound_leg['booking_url'],
+                        'outbound_leg': outbound_leg,
+                        'return_date': return_leg['date'],
+                        'return_price': return_leg['price'],
+                        'return_provider': return_leg['provider'],
+                        'return_provider_name': return_leg['provider_name'],
+                        'return_booking_url': return_leg['booking_url'],
+                        'return_leg': return_leg,
                         'currency': out_route.latest_currency,
                         'total_price': out_route.latest_price + best_return.latest_price,
                         'duration_days': (best_return.travel_date - out_route.travel_date).days,
-                        'booking_url': booking_url,
+                        'mixed_providers': out_route.source != best_return.source,
+                        'primary_booking_url': combined_booking_url or outbound_leg['booking_url'],
+                        'secondary_booking_url': None if combined_booking_url else return_leg['booking_url'],
                     })
 
         results.sort(key=lambda x: x['total_price'])
