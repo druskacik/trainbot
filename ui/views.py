@@ -79,6 +79,10 @@ def index(request):
     return render(request, 'ui/index.html')
 
 
+def about(request):
+    return render(request, 'ui/about.html')
+
+
 @require_GET
 def get_stations(request):
     return JsonResponse(
