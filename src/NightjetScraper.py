@@ -71,7 +71,7 @@ def _get_route_details(
         "njDep": departure_utc_ms,
         "njTo": int(to_station_id),
         "maxChanges": 0,
-        "connections": 1,
+        "connections": 5,
         "filter": {
             "njTrain": train,
             "njDeparture": departure_utc_ms,
@@ -94,13 +94,8 @@ def _parse_details_prices(details: dict) -> Tuple[Optional[float], Optional[floa
     Parse details JSON for cheapest seat and cheapest couchette/sleeper.
     Returns (min_seat_price, min_couchette_price); either may be None.
 
-    Overnight accommodation types (is_couchette=True):
-    - externalIdentifier: couchette4, couchette6 (shared couchette compartments)
-    - externalIdentifier: single, double, triple (private sleeping car compartments)
-    - accommodationType: BE (Bett / sleeping berth)
-
-    Seat price (is_couchette=False):
-    - offer-level priceClass2 only when the offer has no overnight compartments
+    Iterates all offers and all compartments within each offer.
+    accommodationType "SE" = seat, anything else = couchette/sleeper.
     """
     try:
         result = details.get("result") or []
@@ -115,32 +110,23 @@ def _parse_details_prices(details: dict) -> Tuple[Optional[float], Optional[floa
     except (IndexError, KeyError, TypeError):
         return (None, None)
 
-    OVERNIGHT_EXT_IDS = {"couchette4", "couchette6", "single", "double", "triple"}
-    OVERNIGHT_ACC_TYPES = {"BE"}
-
     seat_prices: List[float] = []
     couchette_prices: List[float] = []
 
     for offer in offers:
         reservation = offer.get("reservation") or {}
-        has_overnight = False
-
-        for seg in reservation.get("reservationSegments") or []:
-            for comp in seg.get("compartments") or []:
-                ext_id = comp.get("externalIdentifier") or ""
-                acc_type = comp.get("accommodationType") or ""
-                if ext_id in OVERNIGHT_EXT_IDS or acc_type in OVERNIGHT_ACC_TYPES:
-                    has_overnight = True
-                    objs = comp.get("objects") or []
-                    if objs and objs[0].get("price") is not None:
-                        couchette_prices.append(float(objs[0]["price"]))
-
-        # Only count offer-level priceClass2 as a seat price if the offer has no
-        # overnight accommodation (sleeping car or couchette offers are handled above)
-        if not has_overnight:
-            pc2 = offer.get("priceClass2")
-            if pc2 is not None and pc2 > 0:
-                seat_prices.append(float(pc2))
+        segments = reservation.get("reservationSegments") or []
+        if not segments:
+            continue
+        for comp in segments[0].get("compartments") or []:
+            objs = comp.get("objects") or []
+            if not objs or objs[0].get("price") is None:
+                continue
+            price = float(objs[0]["price"])
+            if comp.get("accommodationType") == "SE":
+                seat_prices.append(price)
+            else:
+                couchette_prices.append(price)
 
     min_seat = min(seat_prices) if seat_prices else None
     min_couchette = min(couchette_prices) if couchette_prices else None
