@@ -58,7 +58,7 @@ CITY_CATALOG = {
             "Basel Bad Station",
         ],
         "providers": {
-            NIGHTJET: {"city_id": "8596001"},
+            NIGHTJET: {"city_id": "8596001", "name": "Basel"},
         },
     },
     "berlin": {
@@ -79,7 +79,7 @@ CITY_CATALOG = {
         ],
         "providers": {
             EUROPEAN_SLEEPER: {"station_id": "8010100"},
-            NIGHTJET: {"city_id": "8096003"},
+            NIGHTJET: {"city_id": "8096003", "name": "Berlin"},
         },
     },
     "bonn": {
@@ -90,7 +90,7 @@ CITY_CATALOG = {
             "Bonn Hbf",
         ],
         "providers": {
-            NIGHTJET: {"city_id": "8081996"},
+            NIGHTJET: {"city_id": "8081996", "name": "Bonn"},
         },
     },
     "bratislava": {
@@ -99,7 +99,7 @@ CITY_CATALOG = {
             "Bratislava hl.st.",
         ],
         "providers": {
-            NIGHTJET: {"city_id": "5696001"},
+            NIGHTJET: {"city_id": "5696001", "name": "Bratislava"},
         },
     },
     "brussels": {
@@ -121,7 +121,7 @@ CITY_CATALOG = {
             "Budapest-Nyugati",
         ],
         "providers": {
-            NIGHTJET: {"city_id": "5596001"},
+            NIGHTJET: {"city_id": "5596001", "name": "Budapest"},
         },
     },
     "decin": {
@@ -162,7 +162,7 @@ CITY_CATALOG = {
             "Firenze Campo di Marte",
         ],
         "providers": {
-            NIGHTJET: {"city_id": "8396001"},
+            NIGHTJET: {"city_id": "8396001", "name": "Florence"},
         },
     },
     "frankfurt_main": {
@@ -176,7 +176,7 @@ CITY_CATALOG = {
             "Frankfurt(M) Flughafen Fernbf",
         ],
         "providers": {
-            NIGHTJET: {"city_id": "8096021"},
+            NIGHTJET: {"city_id": "8096021", "name": "Frankfurt (Main)"},
         },
     },
     "hamburg": {
@@ -191,7 +191,7 @@ CITY_CATALOG = {
         ],
         "providers": {
             EUROPEAN_SLEEPER: {"station_id": "8020401"},
-            NIGHTJET: {"city_id": "8096009"},
+            NIGHTJET: {"city_id": "8096009", "name": "Hamburg"},
         },
     },
     "krakow": {
@@ -201,7 +201,7 @@ CITY_CATALOG = {
             "Krakow Plaszow",
         ],
         "providers": {
-            NIGHTJET: {"city_id": "5196001"},
+            NIGHTJET: {"city_id": "5196001", "name": "Krakow"},
         },
     },
     "munich": {
@@ -214,7 +214,7 @@ CITY_CATALOG = {
             "München Ost",
         ],
         "providers": {
-            NIGHTJET: {"city_id": "8081998"},
+            NIGHTJET: {"city_id": "8081998", "name": "Munich"},
         },
     },
     "paris": {
@@ -238,7 +238,7 @@ CITY_CATALOG = {
         ],
         "providers": {
             EUROPEAN_SLEEPER: {"station_id": "5457076"},
-            NIGHTJET: {"city_id": "5496001"},
+            NIGHTJET: {"city_id": "5496001", "name": "Prague"},
         },
     },
     "rome": {
@@ -250,7 +250,7 @@ CITY_CATALOG = {
             "Rome Termini",
         ],
         "providers": {
-            NIGHTJET: {"city_id": "8396004"},
+            NIGHTJET: {"city_id": "8396004", "name": "Rome"},
         },
     },
     "roosendaal": {
@@ -281,7 +281,7 @@ CITY_CATALOG = {
             "Salzburg Süd Bahnhst",
         ],
         "providers": {
-            NIGHTJET: {"city_id": "1150101"},
+            NIGHTJET: {"city_id": "1150101", "name": "Salzburg"},
         },
     },
     "the_hague": {
@@ -312,7 +312,7 @@ CITY_CATALOG = {
             "Venezia Santa Lucia",
         ],
         "providers": {
-            NIGHTJET: {"city_id": "8396008"},
+            NIGHTJET: {"city_id": "8396008", "name": "Venice"},
         },
     },
     "vienna": {
@@ -324,7 +324,7 @@ CITY_CATALOG = {
             "Wien Hbf (Bahnsteige 3-12)",
         ],
         "providers": {
-            NIGHTJET: {"city_id": "1190100"},
+            NIGHTJET: {"city_id": "1190100", "name": "Vienna"},
         },
     },
     "warsaw": {
@@ -336,7 +336,7 @@ CITY_CATALOG = {
             "Warszawa Centralna",
         ],
         "providers": {
-            NIGHTJET: {"city_id": "5196003"},
+            NIGHTJET: {"city_id": "5196003", "name": "Warsaw"},
         },
     },
     "zagreb": {
@@ -347,7 +347,7 @@ CITY_CATALOG = {
             "Zagreb Glavni kolodvor",
         ],
         "providers": {
-            NIGHTJET: {"city_id": "7896001"},
+            NIGHTJET: {"city_id": "7896001", "name": "Zagreb"},
         },
     },
     "zurich": {
@@ -357,7 +357,7 @@ CITY_CATALOG = {
             "Zürich HB",
         ],
         "providers": {
-            NIGHTJET: {"city_id": "8596008"},
+            NIGHTJET: {"city_id": "8596008", "name": "Zurich"},
         },
     },
 }
@@ -459,17 +459,17 @@ def build_booking_url(
         return None
 
     if source == NIGHTJET:
-        start_station_id = (
+        start_name = (
             start_city.get("providers", {})
             .get(NIGHTJET, {})
-            .get("city_id")
+            .get("name")
         )
-        end_station_id = (
+        end_name = (
             end_city.get("providers", {})
             .get(NIGHTJET, {})
-            .get("city_id")
+            .get("name")
         )
-        if not start_station_id or not end_station_id:
+        if not start_name or not end_name:
             return None
 
         outward_datetime = (
@@ -479,10 +479,11 @@ def build_booking_url(
         )
         query_string = urlencode(
             {
-                "cref": "nightjet",
                 "outwardDateTime": outward_datetime,
-                "stationOrigEva": start_station_id,
-                "stationDestEva": end_station_id,
+                "stationOrigName": start_name,
+                "stationDestName": end_name,
+                "cref": "trainbot",
+                "connectionFilterDirect": "true",
             }
         )
         return f"{NIGHTJET_BOOKING_URL}?{query_string}"
