@@ -238,4 +238,5 @@ class EuropeanSleeperScraper(RoutesScraper):
             failures=failures,
             total_requests=total_requests,
             total_failures=total_failures,
+            scraper_name="European Sleeper",
         )

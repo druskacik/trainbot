@@ -160,7 +160,7 @@ class NightjetScraper(RoutesScraper):
         token = _get_token()
         all_cities = _get_stations()
         if not all_cities:
-            return ScrapeResult(routes_scraped=0, failures=failures, total_requests=0)
+            return ScrapeResult(routes_scraped=0, failures=failures, total_requests=0, scraper_name="Nightjet")
 
         shuffled_cities = list(all_cities)
         random.shuffle(shuffled_cities)
@@ -345,4 +345,5 @@ class NightjetScraper(RoutesScraper):
             failures=failures,
             total_requests=total_requests,
             total_failures=total_failures,
+            scraper_name="Nightjet",
         )

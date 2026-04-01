@@ -10,7 +10,7 @@ sys.path.append(str(project_root))
 
 from src.EuropeanSleeperScraper import EuropeanSleeperScraper
 from src.NightjetScraper import NightjetScraper
-from src.ScrapeResult import ScrapeResult
+from src.ScrapeResult import ScrapeResult, combined_failure_summary
 
 
 @task()
@@ -106,7 +106,7 @@ def daily_scraper_flow():
     try:
         es_result = scrape_european_sleeper()
         nj_result = scrape_nightjet()
-        result = _merge_results(es_result, nj_result)
+        results = [es_result, nj_result]
     except Exception as e:
         print(f"Flow failed with error: {str(e)}")
         if telegram_url:
@@ -116,17 +116,13 @@ def daily_scraper_flow():
             )
         raise e
 
-    if telegram_url and result is not None:
-        if result.failures:
-            apobj.notify(
-                body=result.failure_summary(),
-                title="⚠️ Scraper Warning"
-            )
+    if telegram_url:
+        has_failures = any(r._failure_count > 0 for r in results)
+        body = combined_failure_summary(results)
+        if has_failures:
+            apobj.notify(body=body, title="⚠️ Scraper Warning")
         else:
-            apobj.notify(
-                body=result.failure_summary(),
-                title="✅ Scraper Success"
-            )
+            apobj.notify(body=body, title="✅ Scraper Success")
 
 
 if __name__ == "__main__":

@@ -1,34 +1,76 @@
-# TrainBot — AI design context
+# CLAUDE.md
 
-## Design Context
+This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
 
-### Users
-- **Who:** Travelers planning European train trips, especially those looking for sleeper and couchette options (European Sleeper, Nightjet, etc.).
-- **Context:** They want to find the lowest fares between two stations, optionally for return trips, with control over seat type (any vs couchettes only).
-- **Job to be done:** Choose departure and destination, set journey type and preferences, run a search, and get actionable results (price, dates, leg breakdown) with a direct link to book.
+## Project Overview
 
-### Brand Personality
+TrainBot is a train fare aggregator for European sleeper/couchette trains. It scrapes pricing from European Sleeper and Nightjet (ÖBB) APIs, stores results in PostgreSQL, and serves a search UI via Django.
 
-**Story:** TrainBot sits at the intersection of *ecology* and *technology*: travel by train instead of plane, with AI used to find the best way to get there. The brand should feel like that — thoughtful about the planet and smart about the route.
+## Commands
 
-- **Three words:** *Calm, precise, grounded.*
-- **Voice:** Quietly confident. No hype, no greenwashing. The product does the work; the interface gets out of the way. Copy is short, direct, and human.
-- **Emotional goal:** Users should feel *oriented* — "I know what to do" — and *reassured* — "this is the smarter way to travel." Not flashy or playful; more like a reliable tool that respects their time and the planet.
-- **What we're not:** Preachy, corporate-green, or tech-bro. No fake warmth, no gradients-for-the-sake-of-it. Minimalism and clarity over decoration.
+```bash
+# Install dependencies
+uv sync
 
-### Aesthetic Direction
-- **Driven by the brand:** Restrained, legible, plenty of space. Visual language should feel *grounded* (earth, rail, journey) and *precise* (data, clarity, one clear path). Prefer a single accent or a very small palette so the UI feels calm and intentional.
-- **Minimalism:** Every element should earn its place. No decorative flourishes, no “AI slop” (gradient text, cyan+indigo, glass for glass's sake). Typography and spacing do the work; color supports hierarchy and actions.
-- **Theme:** Light or dark (or both via system preference) is fine; the brand is not tied to dark mode. Choose contrast and readability over trend.
-- **Anti-references:** Generic SaaS dashboards, crypto/AI landing pages, sustainability clichés (leaf logos, green overload). Avoid looking like “AI made this.”
+# Run development server
+uv run python manage.py runserver
 
-### Design Principles
-1. **One accent, clear hierarchy** — Use a single accent (or very small palette) for key actions and focus. Spacing and typography carry the rest; no competing colors.
-2. **Token-first** — CSS custom properties for spacing, radius, colors, focus ring, shadows. Keeps the UI maintainable and themable without hardcoding.
-3. **Accessible by default** — Visible focus (`:focus-visible`), sufficient contrast, touch targets ≥44px, `aria-live`/`aria-busy` for dynamic content, and respect `prefers-reduced-motion`.
-4. **Calm and scannable** — The flow “From/To → options → Search → results” should be obvious. Whitespace and structure over visual noise; empty and error states guide, not distract.
-5. **Resilient and honest** — In-page errors and validation (no `alert()`), safe external links (`rel="noopener noreferrer"`), loading states that are clear and announced to assistive tech.
+# Run scrapers manually
+uv run python -c "from src.flows import scrape_european_sleeper; scrape_european_sleeper()"
+uv run python -c "from src.flows import scrape_nightjet; scrape_nightjet()"
+uv run python -c "from src.flows import daily_scraper_flow; daily_scraper_flow()"
 
----
+# Database migrations (Alembic, not Django migrations)
+uv run alembic upgrade head
+uv run alembic revision --autogenerate -m "description"
 
-*This design context is the source of truth for all design decisions. The brand personality was created from scratch (ecology + technology, minimalism + clarity) and is independent of the current UI.*
+# Query the database (read-only)
+uv run agent_utils/search_db.py --query "SELECT ..." --format csv
+
+# Rebuild CITY_CONNECTIONS from routes table
+uv run agent_utils/build_city_connections.py
+
+# Django management
+uv run python manage.py createsuperuser
+
+# Docker
+docker compose up
+```
+
+## Architecture
+
+**Data flow:** Scrapers → PostgreSQL → Django API → JS frontend → External booking URLs
+
+### Scraping Layer (`src/`)
+- `RoutesScraper.py` — Abstract base; manages SQLAlchemy sessions and batch saves (50 routes/flush)
+- `EuropeanSleeperScraper.py` — Scrapes 4 hardcoded train configs; station IDs are provider-specific integers
+- `NightjetScraper.py` — Discovers stations dynamically via API; separate seat/couchette pricing
+- `flows.py` — Prefect orchestration; daily cron at 2 AM; Telegram notifications via Apprise
+- `models.py` — SQLAlchemy ORM: `Route`, `Price` (historical), `CurrentAvailability` (latest per route+seat type)
+
+### Web Layer (`ui/`, `web/`)
+- `ui/models.py` — Django ORM mirrors `src/models.py`; all models have `managed = False` (Alembic owns schema)
+- `ui/views.py` — Five endpoints: `index`, `about`, `get_stations`, `search_trips`, `_get_routes_with_best_price`
+- `ui/cities.py` — `CITY_CATALOG` (30+ cities with station aliases and provider IDs) and `CITY_CONNECTIONS` (adjacency dict); `build_booking_url()` constructs deep links to europeansleeper.eu and oebbtickets.at
+- Frontend is a Django-served SPA: `index.html` + `script.js` do AJAX to `/search_trips`, inject results dynamically
+
+### Key Design Decisions
+- **Two ORM layers coexist:** SQLAlchemy (`src/`) for scraping writes; Django ORM (`ui/`) for read queries. They share the same tables.
+- **`CurrentAvailability` table** holds the latest price per `(route_id, is_couchette)` — queries use this for speed rather than scanning all `Price` history.
+- **Round-trip search** pairs outbound routes with the best-priced return leg within `max_duration` days; European Sleeper round-trips get a combined booking URL.
+- **`CITY_CONNECTIONS`** in `cities.py` is a manually maintained dict (regenerate with `build_city_connections.py` after schema changes).
+
+## Design Principles (from CLAUDE-DESIGN.md)
+
+This project has explicit design guidance — follow it when touching CSS or templates:
+
+- **Tone:** Calm, precise, grounded. Ecology + technology. No hype, no greenwashing.
+- **CSS approach:** Token-first (CSS variables); one accent color; clear hierarchy.
+- **Accessibility defaults:** `focus-visible` on all interactive elements; 44px touch targets; ARIA attributes; no `alert()` dialogs.
+- **What to avoid:** Glassmorphism (`backdrop-filter`), gradient text on headings, cyan/indigo palette (reads as "AI-generated"), generic SaaS dashboard aesthetics, sustainability clichés.
+
+An accessibility/design audit is in `AUDIT-REPORT.md` — 22 documented issues including 2 critical (radio focus, missing `rel="noopener noreferrer"`). Consult it before making UI changes.
+
+## Environment
+
+Configure via `.env` file. Key variables: `DB_HOST`, `DB_PORT`, `DB_NAME`, `DB_USER`, `DB_PASS`, `TELEGRAM_TOKEN`, `TELEGRAM_CHAT_ID`.
