@@ -8,6 +8,7 @@ import requests
 from .RoutesScraper import RoutesScraper
 from .models import Route, Price
 from .ScrapeResult import ScrapeResult, ScrapeFailure
+from .captcha import solve_challenge
 
 # Cap in-memory failures for long runs to avoid unbounded memory growth
 MAX_FAILURES_STORED = 2000
@@ -40,11 +41,30 @@ def _get_stations(from_id: Optional[str] = None) -> List[dict]:
     return [s for s in stations if s.get("meta") != ""]
 
 
-def _get_routes_on_date(from_id: str, to_id: str, travel_date: date) -> dict:
+def _solve_captcha(from_id, to_id, token: str) -> str:
+    """Fetch and solve the captcha challenge for a connection request."""
+    url = f"{BASE_URL}/captcha/challenge/connection"
+    headers = {
+        "x-token": token,
+        "Content-Type": "application/json",
+    }
+    params = {"from": from_id, "to": to_id}
+    r = requests.get(url, headers=headers, params=params)
+    r.raise_for_status()
+    _solution_obj, b64_captcha = solve_challenge(r.json())
+    return b64_captcha
+
+
+def _get_routes_on_date(from_id: str, to_id: str, travel_date: date, token: str, captcha: str) -> dict:
     """Get all routes on a given date between two city IDs."""
     date_str = travel_date.strftime("%Y-%m-%d")
     url = f"{BASE_URL}/connection/{from_id}/{to_id}/{date_str}"
-    r = requests.get(url)
+    headers = {
+        "x-token": token,
+        "Content-Type": "application/json",
+    }
+    params = {"captcha": captcha}
+    r = requests.get(url, headers=headers, params=params)
     r.raise_for_status()
     return r.json()
 
@@ -55,6 +75,7 @@ def _get_route_details(
     departure_utc_ms: int,
     train: str,
     token: str,
+    train_token: str,
 ) -> dict:
     """
     Fetch offer details for a given Nightjet route.
@@ -83,6 +104,7 @@ def _get_route_details(
             }
         ],
         "lang": "en",
+        "token": train_token,
     }
     r = requests.post(url, headers=headers, json=body)
     r.raise_for_status()
@@ -164,7 +186,8 @@ class NightjetScraper(RoutesScraper):
                 for day_offset in range(90):
                     current_date = start_date + timedelta(days=day_offset)
                     try:
-                        routes_result = _get_routes_on_date(from_id, to_id, current_date)
+                        captcha = _solve_captcha(from_id, to_id, token)
+                        routes_result = _get_routes_on_date(from_id, to_id, current_date, token=token, captcha=captcha)
                     except requests.exceptions.RequestException as e:
                         date_str = current_date.strftime("%Y-%m-%d")
                         total_failures += 1
@@ -194,6 +217,7 @@ class NightjetScraper(RoutesScraper):
                             dep_local = dep.get("local")
                             arr_local = arr.get("local")
                             train_date_str = train_info.get("date")
+                            train_token = train_info.get("token", "")
 
                             if not from_station_id or not to_station_id or dep_utc is None:
                                 continue
@@ -212,6 +236,7 @@ class NightjetScraper(RoutesScraper):
                                     dep_utc,
                                     train_name,
                                     token,
+                                    train_token,
                                 )
                             except requests.exceptions.HTTPError as e:
                                 if e.response is not None and e.response.status_code == 401:
@@ -223,6 +248,7 @@ class NightjetScraper(RoutesScraper):
                                             dep_utc,
                                             train_name,
                                             token,
+                                            train_token,
                                         )
                                     except Exception as retry_e:
                                         total_failures += 1
