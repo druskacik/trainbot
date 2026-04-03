@@ -10,6 +10,7 @@ sys.path.append(str(project_root))
 
 from src.EuropeanSleeperScraper import EuropeanSleeperScraper
 from src.NightjetScraper import NightjetScraper
+from src.RegioJetScraper import RegioJetScraper
 from src.ScrapeResult import ScrapeResult, combined_failure_summary
 
 
@@ -35,6 +36,21 @@ def scrape_nightjet():
     not re-run the entire scrape."""
     print("Starting Nightjet Scraper task...")
     scraper = NightjetScraper()
+    result = scraper.scrape()
+    if result.routes_scraped > 0:
+        print(f"Successfully scraped and saved {result.routes_scraped} routes.")
+    else:
+        print("No routes were found.")
+    return result
+
+
+@task()
+def scrape_regiojet():
+    """Task to run the RegioJetScraper. No task-level retries: these runs take hours
+    and partial progress is already saved in batches; a failure near the end should
+    not re-run the entire scrape."""
+    print("Starting RegioJet Scraper task...")
+    scraper = RegioJetScraper()
     result = scraper.scrape()
     if result.routes_scraped > 0:
         print(f"Successfully scraped and saved {result.routes_scraped} routes.")
@@ -95,9 +111,15 @@ def nightjet_flow():
     _run_flow_with_notifications(scrape_nightjet, "Nightjet Scraper")
 
 
+@flow(name="RegioJet Scraper")
+def regiojet_flow():
+    """Flow to run the RegioJet scraper with notifications."""
+    _run_flow_with_notifications(scrape_regiojet, "RegioJet Scraper")
+
+
 @flow(name="Daily Train Scraper")
 def daily_scraper_flow():
-    """Flow to run both scrapers (European Sleeper + Nightjet) with notifications."""
+    """Flow to run all scrapers (European Sleeper + Nightjet + RegioJet) with notifications."""
     apobj = apprise.Apprise()
     telegram_url = os.getenv('APPRISE_TELEGRAM_URL')
     if telegram_url:
@@ -106,7 +128,8 @@ def daily_scraper_flow():
     try:
         es_result = scrape_european_sleeper()
         nj_result = scrape_nightjet()
-        results = [es_result, nj_result]
+        rj_result = scrape_regiojet()
+        results = [es_result, nj_result, rj_result]
     except Exception as e:
         print(f"Flow failed with error: {str(e)}")
         if telegram_url:
@@ -135,4 +158,5 @@ if __name__ == "__main__":
         ),
         european_sleeper_flow.to_deployment(name="european-sleeper"),
         nightjet_flow.to_deployment(name="nightjet"),
+        regiojet_flow.to_deployment(name="regiojet"),
     )
