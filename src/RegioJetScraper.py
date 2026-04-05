@@ -1,9 +1,12 @@
+import logging
 import time
 import random
 from datetime import date, timedelta, datetime
 from typing import List, Optional, Tuple
 
 import requests
+
+logger = logging.getLogger(__name__)
 
 from .RoutesScraper import RoutesScraper
 from .models import Route, Price
@@ -262,10 +265,10 @@ class RegioJetScraper(RoutesScraper):
                         dep_time = datetime.fromisoformat(detail_dep_str)
                         arr_time = datetime.fromisoformat(detail_arr_str)
                     except (ValueError, TypeError):
-                        print(f"Could not parse times for {train_code} {date_str}. Skipping.")
+                        logger.warning(f"Could not parse times for {train_code} {date_str}. Skipping.")
                         continue
 
-                    print(f"Scraping {train_code} {date_str}: {dep_city} -> {arr_city}")
+                    logger.info(f"Scraping {train_code} {date_str}: {dep_city} -> {arr_city}")
 
                     min_seat, min_couchette = _parse_prices(detail)
 

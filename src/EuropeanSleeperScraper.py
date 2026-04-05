@@ -1,7 +1,10 @@
+import logging
 import time
 from datetime import date, timedelta, datetime
 import requests
 from typing import List
+
+logger = logging.getLogger(__name__)
 
 from .RoutesScraper import RoutesScraper
 from .models import Route, Price
@@ -134,23 +137,23 @@ class EuropeanSleeperScraper(RoutesScraper):
                         to_name = STATIONS[to_id]['name']
                         
                         total_requests += 1
-                        print(f"Scraping train {train_number} for {current_date_str}: {from_name} to {to_name}")
+                        logger.info(f"Scraping train {train_number} for {current_date_str}: {from_name} to {to_name}")
                         
                         try:
                             result = self._search_availability(current_date_str, train_number, route_id, from_id, to_id)
                         except requests.exceptions.HTTPError as e:
                             if e.response is not None and e.response.status_code == 400:
-                                print(f"Skipping {current_date_str} for train {train_number} ({from_name}->{to_name}) due to 400 Bad Request.")
+                                logger.warning(f"Skipping {current_date_str} for train {train_number} ({from_name}->{to_name}) due to 400 Bad Request.")
                             else:
                                 error_msg = str(e)
-                                print(f"Failed to fetch {current_date_str} for train {train_number} ({from_name}->{to_name}): {error_msg}")
+                                logger.warning(f"Failed to fetch {current_date_str} for train {train_number} ({from_name}->{to_name}): {error_msg}")
                                 total_failures += 1
                                 if len(failures) < MAX_FAILURES_STORED:
                                     failures.append(ScrapeFailure(current_date_str, train_number, error_msg))
                             continue
                         except Exception as e:
                             error_msg = str(e)
-                            print(f"Failed to fetch {current_date_str} for train {train_number} ({from_name}->{to_name}): {error_msg}")
+                            logger.warning(f"Failed to fetch {current_date_str} for train {train_number} ({from_name}->{to_name}): {error_msg}")
                             total_failures += 1
                             if len(failures) < MAX_FAILURES_STORED:
                                 failures.append(ScrapeFailure(current_date_str, train_number, error_msg))
@@ -175,7 +178,7 @@ class EuropeanSleeperScraper(RoutesScraper):
                             dep_time = datetime.fromisoformat(availability['departureTime'])
                             arr_time = datetime.fromisoformat(availability['arrivalTime'])
                         except (KeyError, ValueError):
-                            print(f"Could not parse dates for {current_date_str}. Skipping.")
+                            logger.warning(f"Could not parse dates for {current_date_str}. Skipping.")
                             continue
                         
                         min_price = None

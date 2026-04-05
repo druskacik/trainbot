@@ -1,3 +1,4 @@
+import logging
 import os
 from datetime import datetime
 from abc import ABC, abstractmethod
@@ -5,6 +6,8 @@ from typing import List, Tuple, Optional, Dict
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 from dotenv import load_dotenv
+
+logger = logging.getLogger(__name__)
 
 from .models import Route, CurrentAvailability
 
@@ -55,7 +58,7 @@ class RoutesScraper(ABC):
         the same connection appears for multiple calendar dates (e.g. Nightjet).
         """
         if not routes_prices_availability:
-            print("No routes to save.")
+            logger.info("No routes to save.")
             return
 
         session = self.SessionLocal()
@@ -120,10 +123,10 @@ class RoutesScraper(ABC):
                         availability_count += 1
 
             session.commit()
-            print(f"Successfully saved {route_count} routes, {price_count} prices, {availability_count} availability rows.")
+            logger.info(f"Successfully saved {route_count} routes, {price_count} prices, {availability_count} availability rows.")
         except Exception as e:
             session.rollback()
-            print(f"Error saving routes: {e}")
+            logger.error(f"Error saving routes: {e}")
             raise
         finally:
             session.close()

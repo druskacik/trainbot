@@ -1,8 +1,14 @@
+import logging
+
+logging.basicConfig(level=logging.INFO)
+
 from prefect import flow, serve, task
 import apprise
 import os
 import sys
 from pathlib import Path
+
+logger = logging.getLogger(__name__)
 
 # Add project root to path so we can import src
 project_root = Path(__file__).resolve().parent.parent
@@ -19,13 +25,13 @@ def scrape_european_sleeper():
     """Task to run the EuropeanSleeperScraper. No task-level retries: these runs take
     hours and partial progress is already saved in batches; a failure near the end
     should not re-run the entire scrape."""
-    print("Starting European Sleeper Scraper task...")
+    logger.info("Starting European Sleeper Scraper task...")
     scraper = EuropeanSleeperScraper()
     result = scraper.scrape()
     if result.routes_scraped > 0:
-        print(f"Successfully scraped and saved {result.routes_scraped} routes.")
+        logger.info(f"Successfully scraped and saved {result.routes_scraped} routes.")
     else:
-        print("No routes were found.")
+        logger.info("No routes were found.")
     return result
 
 
@@ -34,13 +40,13 @@ def scrape_nightjet():
     """Task to run the NightjetScraper. No task-level retries: these runs take hours
     and partial progress is already saved in batches; a failure near the end should
     not re-run the entire scrape."""
-    print("Starting Nightjet Scraper task...")
+    logger.info("Starting Nightjet Scraper task...")
     scraper = NightjetScraper()
     result = scraper.scrape()
     if result.routes_scraped > 0:
-        print(f"Successfully scraped and saved {result.routes_scraped} routes.")
+        logger.info(f"Successfully scraped and saved {result.routes_scraped} routes.")
     else:
-        print("No routes were found.")
+        logger.info("No routes were found.")
     return result
 
 
@@ -49,13 +55,13 @@ def scrape_regiojet():
     """Task to run the RegioJetScraper. No task-level retries: these runs take hours
     and partial progress is already saved in batches; a failure near the end should
     not re-run the entire scrape."""
-    print("Starting RegioJet Scraper task...")
+    logger.info("Starting RegioJet Scraper task...")
     scraper = RegioJetScraper()
     result = scraper.scrape()
     if result.routes_scraped > 0:
-        print(f"Successfully scraped and saved {result.routes_scraped} routes.")
+        logger.info(f"Successfully scraped and saved {result.routes_scraped} routes.")
     else:
-        print("No routes were found.")
+        logger.info("No routes were found.")
     return result
 
 
@@ -78,7 +84,7 @@ def _run_flow_with_notifications(scrape_task, flow_name: str):
     try:
         result = scrape_task()
     except Exception as e:
-        print(f"Flow failed with error: {str(e)}")
+        logger.error(f"Flow failed with error: {str(e)}")
         if telegram_url:
             apobj.notify(
                 body=f"{flow_name} failed!\nError: {str(e)}",
@@ -131,7 +137,7 @@ def daily_scraper_flow():
         rj_result = scrape_regiojet()
         results = [es_result, nj_result, rj_result]
     except Exception as e:
-        print(f"Flow failed with error: {str(e)}")
+        logger.error(f"Flow failed with error: {str(e)}")
         if telegram_url:
             apobj.notify(
                 body=f"The train scraper failed!\nError: {str(e)}",

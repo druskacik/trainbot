@@ -1,9 +1,12 @@
+import logging
 import time
 import random
 from datetime import date, timedelta, datetime
 from typing import List, Optional, Tuple
 
 import requests
+
+logger = logging.getLogger(__name__)
 
 from .RoutesScraper import RoutesScraper
 from .models import Route, Price
@@ -225,7 +228,7 @@ class NightjetScraper(RoutesScraper):
                                 continue
 
                             total_requests += 1
-                            print(
+                            logger.info(
                                 f"Scraping {train_name} {train_date_str}: {from_name} -> {to_name}"
                             )
 
@@ -296,7 +299,7 @@ class NightjetScraper(RoutesScraper):
                                     arr_local.replace("Z", "+00:00")
                                 )
                             except (ValueError, TypeError):
-                                print(
+                                logger.warning(
                                     f"Could not parse times for {train_date_str} {train_name}. Skipping."
                                 )
                                 continue
