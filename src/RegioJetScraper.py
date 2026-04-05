@@ -11,7 +11,8 @@ from .ScrapeResult import ScrapeResult, ScrapeFailure
 
 MAX_FAILURES_STORED = 2000
 
-BASE_URL = "https://brn-ybus-pubapi.sa.cz/restapi/routes/search"
+SEARCH_URL = "https://brn-ybus-pubapi.sa.cz/restapi/routes/search/simple"
+DETAIL_URL = "https://brn-ybus-pubapi.sa.cz/restapi/routes/{route_id}/simple"
 SOURCE = "regiojet"
 CURRENCY = "eur"
 
@@ -122,6 +123,7 @@ def _collect_city_pairs() -> List[Tuple[int, int]]:
 
 def _search_routes(from_city_id: int, to_city_id: int, departure_date: str) -> list:
     """Search RegioJet API for routes between two cities on a given date.
+    Uses the /simple endpoint which correctly respects the departureDate parameter.
     Returns the list of route objects from the 'routes' key."""
     params = {
         "fromLocationId": from_city_id,
@@ -130,15 +132,29 @@ def _search_routes(from_city_id: int, to_city_id: int, departure_date: str) -> l
         "toLocationType": "CITY",
         "departureDate": departure_date,
     }
-    r = requests.get(BASE_URL, params=params)
+    r = requests.get(SEARCH_URL, params=params)
     r.raise_for_status()
     data = r.json()
     return data.get("routes") or []
 
 
-def _get_train_code(route_data: dict) -> Optional[str]:
+def _get_route_detail(route_id: str, from_station_id: int, to_station_id: int) -> dict:
+    """Fetch full route details (priceClasses, sections, city names) for a specific route.
+    Uses /routes/{routeId}/simple with station IDs and tariff."""
+    url = DETAIL_URL.format(route_id=route_id)
+    params = {
+        "fromStationId": from_station_id,
+        "toStationId": to_station_id,
+        "tariffs": "REGULAR",
+    }
+    r = requests.get(url, params=params)
+    r.raise_for_status()
+    return r.json()
+
+
+def _get_train_code(detail: dict) -> Optional[str]:
     """Extract the train line code (e.g. 'RJ 1021') from a route's sections."""
-    for section in route_data.get("sections") or []:
+    for section in detail.get("sections") or []:
         line = section.get("line") or {}
         code = line.get("code")
         if code:
@@ -146,7 +162,7 @@ def _get_train_code(route_data: dict) -> Optional[str]:
     return None
 
 
-def _parse_prices(route_data: dict) -> Tuple[Optional[float], Optional[float]]:
+def _parse_prices(detail: dict) -> Tuple[Optional[float], Optional[float]]:
     """
     Parse priceClasses for cheapest seat and cheapest sleeping price.
     seatClassKey containing 'COUCHETTE' = sleeping, else = seat.
@@ -156,7 +172,7 @@ def _parse_prices(route_data: dict) -> Tuple[Optional[float], Optional[float]]:
     seat_prices: List[float] = []
     couchette_prices: List[float] = []
 
-    for pc in route_data.get("priceClasses") or []:
+    for pc in detail.get("priceClasses") or []:
         if not pc.get("bookable"):
             continue
         if (pc.get("freeSeatsCount") or 0) <= 0:
@@ -206,29 +222,52 @@ class RegioJetScraper(RoutesScraper):
                     time.sleep(0.5)
                     continue
 
-                for route_data in routes_data:
-                    train_code = _get_train_code(route_data)
-                    if not train_code or train_code not in NIGHT_TRAINS:
+                for simple_route in routes_data:
+                    rj_route_id = simple_route.get("id")
+                    from_station_id = simple_route.get("departureStationId")
+                    to_station_id = simple_route.get("arrivalStationId")
+                    if not rj_route_id or not from_station_id or not to_station_id:
                         continue
 
-                    dep_city = route_data.get("departureCityName", "")
-                    arr_city = route_data.get("arrivalCityName", "")
-                    dep_time_str = route_data.get("departureTime")
-                    arr_time_str = route_data.get("arrivalTime")
-
-                    if not dep_time_str or not arr_time_str:
+                    # Filter by departure date — the simple endpoint may return
+                    # routes from neighbouring days too
+                    dep_time_str = simple_route.get("departureTime", "")
+                    if not dep_time_str.startswith(date_str):
                         continue
 
                     try:
-                        dep_time = datetime.fromisoformat(dep_time_str)
-                        arr_time = datetime.fromisoformat(arr_time_str)
+                        detail = _get_route_detail(rj_route_id, from_station_id, to_station_id)
+                    except requests.exceptions.RequestException as e:
+                        total_failures += 1
+                        if len(failures) < MAX_FAILURES_STORED:
+                            failures.append(
+                                ScrapeFailure(date_str, f"{from_city_id}-{to_city_id}", str(e))
+                            )
+                        time.sleep(0.5)
+                        continue
+
+                    train_code = _get_train_code(detail)
+                    if not train_code or train_code not in NIGHT_TRAINS:
+                        continue
+
+                    dep_city = detail.get("departureCityName", "")
+                    arr_city = detail.get("arrivalCityName", "")
+                    detail_dep_str = detail.get("departureTime")
+                    detail_arr_str = detail.get("arrivalTime")
+
+                    if not detail_dep_str or not detail_arr_str:
+                        continue
+
+                    try:
+                        dep_time = datetime.fromisoformat(detail_dep_str)
+                        arr_time = datetime.fromisoformat(detail_arr_str)
                     except (ValueError, TypeError):
                         print(f"Could not parse times for {train_code} {date_str}. Skipping.")
                         continue
 
                     print(f"Scraping {train_code} {date_str}: {dep_city} -> {arr_city}")
 
-                    min_seat, min_couchette = _parse_prices(route_data)
+                    min_seat, min_couchette = _parse_prices(detail)
 
                     route_id = f"{SOURCE}|{train_code}|{dep_city}|{arr_city}|{dep_time.isoformat()}"
 
