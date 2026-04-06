@@ -26,78 +26,78 @@ NIGHT_TRAINS = {"RJ 1020", "RJ 1021", "RJ 1022", "RJ 1023"}
 # but deduplicated when generating search pairs.
 TRAIN_ROUTES = {
     "RJ 1020": [
-        ("Chop", 7122881001),
-        ("Košice", 10202033),
-        ("Kysak (u města Prešov)", 1762994001),
-        ("Margecany", 2317706000),
-        ("Spišská Nová Ves", 1762994000),
-        ("Poprad", 10202035),
-        ("Štrba", 49584002),
-        ("Liptovský Mikuláš", 10202036),
-        ("Ružomberok", 10202037),
-        ("Vrútky", 49584000),
-        ("Žilina", 10202038),
-        ("Čadca", 508808002),
-        ("Návsí (Jablunkov)", 1558067000),
-        ("Bystřice (Třinec)", 1313136001),
-        ("Třinec centrum", 508808001),
-        ("Český Těšín", 508808000),
-        ("Havířov", 372842004),
-        ("Ostrava", 10202000),
-        ("Bohumín", 2147875000),
-        ("Opava východ", 3741270000),
-        ("Hranice na M.", 372842003),
-        ("Olomouc", 10202031),
-        ("Zábřeh na Moravě", 372842002),
-        ("Česká Třebová", 1313136000),
-        ("Pardubice", 372842000),
-        ("Prague", 10202003),
+        ("Chop", 7122881001, "UA"),
+        ("Košice", 10202033, "SK"),
+        ("Kysak (u města Prešov)", 1762994001, "SK"),
+        ("Margecany", 2317706000, "SK"),
+        ("Spišská Nová Ves", 1762994000, "SK"),
+        ("Poprad", 10202035, "SK"),
+        ("Štrba", 49584002, "SK"),
+        ("Liptovský Mikuláš", 10202036, "SK"),
+        ("Ružomberok", 10202037, "SK"),
+        ("Vrútky", 49584000, "SK"),
+        ("Žilina", 10202038, "SK"),
+        ("Čadca", 508808002, "SK"),
+        ("Návsí (Jablunkov)", 1558067000, "CZ"),
+        ("Bystřice (Třinec)", 1313136001, "CZ"),
+        ("Třinec centrum", 508808001, "CZ"),
+        ("Český Těšín", 508808000, "CZ"),
+        ("Havířov", 372842004, "CZ"),
+        ("Ostrava", 10202000, "CZ"),
+        ("Bohumín", 2147875000, "CZ"),
+        ("Opava východ", 3741270000, "CZ"),
+        ("Hranice na M.", 372842003, "CZ"),
+        ("Olomouc", 10202031, "CZ"),
+        ("Zábřeh na Moravě", 372842002, "CZ"),
+        ("Česká Třebová", 1313136000, "CZ"),
+        ("Pardubice", 372842000, "CZ"),
+        ("Prague", 10202003, "CZ"),
     ],
     "RJ 1021": [
-        ("Prague", 10202003),
-        ("Pardubice", 372842000),
-        ("Česká Třebová", 1313136000),
-        ("Zábřeh na Moravě", 372842002),
-        ("Olomouc", 10202031),
-        ("Hranice na M.", 372842003),
-        ("Ostrava", 10202000),
-        ("Opava východ", 3741270000),
-        ("Bohumín", 2147875000),
-        ("Havířov", 372842004),
-        ("Český Těšín", 508808000),
-        ("Třinec centrum", 508808001),
-        ("Bystřice (Třinec)", 1313136001),
-        ("Návsí (Jablunkov)", 1558067000),
-        ("Čadca", 508808002),
-        ("Žilina", 10202038),
-        ("Vrútky", 49584000),
-        ("Ružomberok", 10202037),
-        ("Liptovský Mikuláš", 10202036),
-        ("Štrba", 49584002),
-        ("Poprad", 10202035),
-        ("Spišská Nová Ves", 1762994000),
-        ("Margecany", 2317706000),
-        ("Kysak (u města Prešov)", 1762994001),
-        ("Košice", 10202033),
-        ("Chop", 7122881001),
+        ("Prague", 10202003, "CZ"),
+        ("Pardubice", 372842000, "CZ"),
+        ("Česká Třebová", 1313136000, "CZ"),
+        ("Zábřeh na Moravě", 372842002, "CZ"),
+        ("Olomouc", 10202031, "CZ"),
+        ("Hranice na M.", 372842003, "CZ"),
+        ("Ostrava", 10202000, "CZ"),
+        ("Opava východ", 3741270000, "CZ"),
+        ("Bohumín", 2147875000, "CZ"),
+        ("Havířov", 372842004, "CZ"),
+        ("Český Těšín", 508808000, "CZ"),
+        ("Třinec centrum", 508808001, "CZ"),
+        ("Bystřice (Třinec)", 1313136001, "CZ"),
+        ("Návsí (Jablunkov)", 1558067000, "CZ"),
+        ("Čadca", 508808002, "SK"),
+        ("Žilina", 10202038, "SK"),
+        ("Vrútky", 49584000, "SK"),
+        ("Ružomberok", 10202037, "SK"),
+        ("Liptovský Mikuláš", 10202036, "SK"),
+        ("Štrba", 49584002, "SK"),
+        ("Poprad", 10202035, "SK"),
+        ("Spišská Nová Ves", 1762994000, "SK"),
+        ("Margecany", 2317706000, "SK"),
+        ("Kysak (u města Prešov)", 1762994001, "SK"),
+        ("Košice", 10202033, "SK"),
+        ("Chop", 7122881001, "UA"),
     ],
     "RJ 1022": [
-        ("Přemyšl", 5990055004),
-        ("Řešov", 5990055007),
-        ("Cracow", 1225791000),
-        ("Ostrava", 10202000),
-        ("Olomouc", 10202031),
-        ("Pardubice", 372842000),
-        ("Prague", 10202003),
+        ("Přemyšl", 5990055004, "PL"),
+        ("Řešov", 5990055007, "PL"),
+        ("Cracow", 1225791000, "PL"),
+        ("Ostrava", 10202000, "CZ"),
+        ("Olomouc", 10202031, "CZ"),
+        ("Pardubice", 372842000, "CZ"),
+        ("Prague", 10202003, "CZ"),
     ],
     "RJ 1023": [
-        ("Prague", 10202003),
-        ("Pardubice", 372842000),
-        ("Olomouc", 10202031),
-        ("Ostrava", 10202000),
-        ("Cracow", 1225791000),
-        ("Řešov", 5990055007),
-        ("Přemyšl", 5990055004),
+        ("Prague", 10202003, "CZ"),
+        ("Pardubice", 372842000, "CZ"),
+        ("Olomouc", 10202031, "CZ"),
+        ("Ostrava", 10202000, "CZ"),
+        ("Cracow", 1225791000, "PL"),
+        ("Řešov", 5990055007, "PL"),
+        ("Přemyšl", 5990055004, "PL"),
     ],
 }
 
@@ -106,21 +106,22 @@ def _deduplicated_stops(stops: list) -> list:
     """Remove duplicate city_ids from a stop list, keeping first occurrence."""
     seen = set()
     result = []
-    for name, city_id in stops:
+    for name, city_id, country in stops:
         if city_id not in seen:
             seen.add(city_id)
-            result.append((name, city_id))
+            result.append((name, city_id, country))
     return result
 
 
 def _collect_city_pairs() -> List[Tuple[int, int]]:
-    """Collect all unique directed (from_city_id, to_city_id) pairs across all routes."""
+    """Collect unique directed (from_city_id, to_city_id) pairs, skipping domestic."""
     pairs = set()
     for stops in TRAIN_ROUTES.values():
         deduped = _deduplicated_stops(stops)
-        for i, (_, from_id) in enumerate(deduped):
-            for _, to_id in deduped[i + 1:]:
-                pairs.add((from_id, to_id))
+        for i, (_, from_id, from_country) in enumerate(deduped):
+            for _, to_id, to_country in deduped[i + 1:]:
+                if from_country != to_country:
+                    pairs.add((from_id, to_id))
     return list(pairs)
 
 
@@ -204,13 +205,15 @@ class RegioJetScraper(RoutesScraper):
         total_failures = 0
         total_requests = 0
         start_date = date.today()
+        seen_routes: set = set()
 
         city_pairs = _collect_city_pairs()
         random.shuffle(city_pairs)
 
         for from_city_id, to_city_id in city_pairs:
-            for day_offset in range(90):
+            for day_offset in range(0, 90, 3):
                 current_date = start_date + timedelta(days=day_offset)
+                window_end = current_date + timedelta(days=2)
                 date_str = current_date.strftime("%Y-%m-%d")
 
                 total_requests += 1
@@ -232,11 +235,20 @@ class RegioJetScraper(RoutesScraper):
                     if not rj_route_id or not from_station_id or not to_station_id:
                         continue
 
-                    # Filter by departure date — the simple endpoint may return
-                    # routes from neighbouring days too
+                    # The API returns routes for the queried date + 2 following days;
+                    # filter to the 3-day window
                     dep_time_str = simple_route.get("departureTime", "")
-                    if not dep_time_str.startswith(date_str):
+                    try:
+                        dep_date = datetime.fromisoformat(dep_time_str).date()
+                    except (ValueError, TypeError):
                         continue
+                    if not (current_date <= dep_date <= window_end):
+                        continue
+
+                    route_key = (rj_route_id, from_station_id, to_station_id)
+                    if route_key in seen_routes:
+                        continue
+                    seen_routes.add(route_key)
 
                     try:
                         detail = _get_route_detail(rj_route_id, from_station_id, to_station_id)
