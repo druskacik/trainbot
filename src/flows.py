@@ -17,61 +17,29 @@ sys.path.append(str(project_root))
 from src.EuropeanSleeperScraper import EuropeanSleeperScraper
 from src.NightjetScraper import NightjetScraper
 from src.RegioJetScraper import RegioJetScraper
-from src.ScrapeResult import ScrapeResult, combined_failure_summary
+from src.ScrapeResult import combined_failure_summary
 
 
-@task()
-def scrape_european_sleeper():
-    """Task to run the EuropeanSleeperScraper. No task-level retries: these runs take
+def _make_scrape_task(scraper_cls, name):
+    """Create a Prefect task for a scraper. No task-level retries: these runs take
     hours and partial progress is already saved in batches; a failure near the end
     should not re-run the entire scrape."""
-    logger.info("Starting European Sleeper Scraper task...")
-    scraper = EuropeanSleeperScraper()
-    result = scraper.scrape()
-    if result.routes_scraped > 0:
-        logger.info(f"Successfully scraped and saved {result.routes_scraped} routes.")
-    else:
-        logger.info("No routes were found.")
-    return result
+    @task()
+    def _task():
+        logger.info(f"Starting {name} task...")
+        result = scraper_cls().scrape()
+        if result.routes_scraped > 0:
+            logger.info(f"Successfully scraped and saved {result.routes_scraped} routes.")
+        else:
+            logger.info("No routes were found.")
+        return result
+    _task.__name__ = name.lower().replace(' ', '_')
+    return _task
 
 
-@task()
-def scrape_nightjet():
-    """Task to run the NightjetScraper. No task-level retries: these runs take hours
-    and partial progress is already saved in batches; a failure near the end should
-    not re-run the entire scrape."""
-    logger.info("Starting Nightjet Scraper task...")
-    scraper = NightjetScraper()
-    result = scraper.scrape()
-    if result.routes_scraped > 0:
-        logger.info(f"Successfully scraped and saved {result.routes_scraped} routes.")
-    else:
-        logger.info("No routes were found.")
-    return result
-
-
-@task()
-def scrape_regiojet():
-    """Task to run the RegioJetScraper. No task-level retries: these runs take hours
-    and partial progress is already saved in batches; a failure near the end should
-    not re-run the entire scrape."""
-    logger.info("Starting RegioJet Scraper task...")
-    scraper = RegioJetScraper()
-    result = scraper.scrape()
-    if result.routes_scraped > 0:
-        logger.info(f"Successfully scraped and saved {result.routes_scraped} routes.")
-    else:
-        logger.info("No routes were found.")
-    return result
-
-
-def _merge_results(a: ScrapeResult, b: ScrapeResult) -> ScrapeResult:
-    """Merge two ScrapeResults for combined reporting."""
-    return ScrapeResult(
-        routes_scraped=a.routes_scraped + b.routes_scraped,
-        failures=a.failures + b.failures,
-        total_requests=a.total_requests + b.total_requests,
-    )
+scrape_european_sleeper = _make_scrape_task(EuropeanSleeperScraper, "European Sleeper")
+scrape_nightjet = _make_scrape_task(NightjetScraper, "Nightjet")
+scrape_regiojet = _make_scrape_task(RegioJetScraper, "RegioJet")
 
 
 def _run_flow_with_notifications(scrape_task, flow_name: str):
@@ -90,7 +58,7 @@ def _run_flow_with_notifications(scrape_task, flow_name: str):
                 body=f"{flow_name} failed!\nError: {str(e)}",
                 title="🚨 Scraper Alert"
             )
-        raise e
+        raise
 
     if telegram_url and result is not None:
         if result.failures:
@@ -105,22 +73,17 @@ def _run_flow_with_notifications(scrape_task, flow_name: str):
             )
 
 
-@flow(name="European Sleeper Scraper")
-def european_sleeper_flow():
-    """Flow to run the European Sleeper scraper with notifications."""
-    _run_flow_with_notifications(scrape_european_sleeper, "European Sleeper Scraper")
+def _make_flow(scrape_task, name):
+    @flow(name=name)
+    def _flow():
+        _run_flow_with_notifications(scrape_task, name)
+    _flow.__name__ = name.lower().replace(' ', '_') + '_flow'
+    return _flow
 
 
-@flow(name="Nightjet Scraper")
-def nightjet_flow():
-    """Flow to run the Nightjet scraper with notifications."""
-    _run_flow_with_notifications(scrape_nightjet, "Nightjet Scraper")
-
-
-@flow(name="RegioJet Scraper")
-def regiojet_flow():
-    """Flow to run the RegioJet scraper with notifications."""
-    _run_flow_with_notifications(scrape_regiojet, "RegioJet Scraper")
+european_sleeper_flow = _make_flow(scrape_european_sleeper, "European Sleeper Scraper")
+nightjet_flow = _make_flow(scrape_nightjet, "Nightjet Scraper")
+regiojet_flow = _make_flow(scrape_regiojet, "RegioJet Scraper")
 
 
 @flow(name="Daily Train Scraper")
