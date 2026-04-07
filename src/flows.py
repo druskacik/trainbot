@@ -131,23 +131,35 @@ def daily_scraper_flow():
     if telegram_url:
         apobj.add(telegram_url)
 
-    try:
-        es_result = scrape_european_sleeper()
-        nj_result = scrape_nightjet()
-        rj_result = scrape_regiojet()
-        results = [es_result, nj_result, rj_result]
-    except Exception as e:
-        logger.error(f"Flow failed with error: {str(e)}")
+    # Submit all scrapers concurrently
+    es_future = scrape_european_sleeper.submit()
+    nj_future = scrape_nightjet.submit()
+    rj_future = scrape_regiojet.submit()
+
+    results = []
+    errors = []
+    for name, future in [
+        ("European Sleeper", es_future),
+        ("Nightjet", nj_future),
+        ("RegioJet", rj_future),
+    ]:
+        try:
+            results.append(future.result())
+        except Exception as e:
+            logger.error(f"{name} scraper failed: {e}")
+            errors.append(f"{name}: {e}")
+
+    if not results and errors:
+        error_msg = "All scrapers failed!\n" + "\n".join(errors)
         if telegram_url:
-            apobj.notify(
-                body=f"The train scraper failed!\nError: {str(e)}",
-                title="🚨 Scraper Alert"
-            )
-        raise e
+            apobj.notify(body=error_msg, title="🚨 Scraper Alert")
+        raise RuntimeError(error_msg)
 
     if telegram_url:
-        has_failures = any(r._failure_count > 0 for r in results)
+        has_failures = any(r._failure_count > 0 for r in results) or errors
         body = combined_failure_summary(results)
+        if errors:
+            body += "\n\nCrashed scrapers:\n" + "\n".join(f"  • {e}" for e in errors)
         if has_failures:
             apobj.notify(body=body, title="⚠️ Scraper Warning")
         else:
