@@ -8,6 +8,12 @@ from .cities import (
     CITY_CATALOG,
     CITY_CONNECTIONS,
     EUROPEAN_SLEEPER,
+    EUROPEAN_SLEEPER_BOOKING_URL,
+    NIGHTJET,
+    NIGHTJET_BOOKING_URL,
+    PROVIDER_ROUTES,
+    REGIOJET,
+    REGIOJET_BOOKING_URL,
     build_booking_url,
     get_city,
     get_city_options,
@@ -81,6 +87,32 @@ def index(request):
 
 def about(request):
     return render(request, 'ui/about.html')
+
+
+def coverage(request):
+    providers = [
+        {"id": EUROPEAN_SLEEPER, "name": "European Sleeper", "url": EUROPEAN_SLEEPER_BOOKING_URL},
+        {"id": NIGHTJET,         "name": "Nightjet",         "url": NIGHTJET_BOOKING_URL},
+        {"id": REGIOJET,         "name": "RegioJet",         "url": REGIOJET_BOOKING_URL},
+    ]
+    for p in providers:
+        raw_routes = PROVIDER_ROUTES.get(p["id"], [])
+        routes = []
+        all_cities = set()
+        for r in raw_routes:
+            resolved = [CITY_CATALOG[cid]["name"] for cid in r["stops"]]
+            expanded = len(resolved) >= 5
+            routes.append({
+                "name": r["name"],
+                "trains": r["trains"],
+                "stops": resolved,
+                "expanded": expanded,
+                "endpoints": f"{resolved[0]} — {resolved[-1]}" if expanded else "",
+            })
+            all_cities.update(r["stops"])
+        p["routes"] = routes
+        p["city_count"] = len(all_cities)
+    return render(request, "ui/coverage.html", {"providers": providers})
 
 
 @require_GET

@@ -584,12 +584,10 @@ document.addEventListener('DOMContentLoaded', () => {
                 const isReturn = formData.get('type') === 'return';
                 renderResults(result.routes, isReturn);
             } else {
-                console.error(result.message);
                 showFormError(result.message || 'An error occurred while fetching trips.');
                 noResultsState.classList.remove('hidden');
             }
         } catch (error) {
-            console.error('Fetch error:', error);
             showFormError('Network error. Please try again.');
             noResultsState.classList.remove('hidden');
         } finally {

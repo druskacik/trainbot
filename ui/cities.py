@@ -663,6 +663,149 @@ CITY_CONNECTIONS = {
     "zurich": ["basel", "berlin", "bonn", "budapest", "frankfurt_main", "hamburg", "prague", "salzburg", "vienna", "zagreb"],
 }
 
+PROVIDER_ROUTES = {
+    EUROPEAN_SLEEPER: [
+        {
+            "name": "Brussels — Prague",
+            "trains": "453 / 452",
+            "stops": [
+                "brussels", "antwerp", "roosendaal", "rotterdam", "the_hague",
+                "amsterdam", "amersfoort", "deventer", "berlin", "dresden",
+                "bad_schandau", "decin", "usti_nad_labem", "prague",
+            ],
+        },
+        {
+            "name": "Paris — Berlin",
+            "trains": "475 / 474",
+            "stops": ["paris", "brussels", "hamburg", "berlin"],
+        },
+    ],
+    NIGHTJET: [
+        {
+            "name": "Vienna — Zurich",
+            "trains": "NJ 466 / 467",
+            "stops": ["vienna", "salzburg", "zurich"],
+        },
+        {
+            "name": "Vienna — Prague — Berlin",
+            "trains": "NJ 456 / 457",
+            "stops": ["vienna", "prague", "berlin"],
+        },
+        {
+            "name": "Vienna — Munich — Bonn",
+            "trains": "NJ 468 / 469",
+            "stops": ["vienna", "salzburg", "munich", "bonn"],
+        },
+        {
+            "name": "Vienna — Munich — Hamburg",
+            "trains": "NJ 492 / 493",
+            "stops": ["vienna", "salzburg", "munich", "hamburg"],
+        },
+        {
+            "name": "Vienna — Venice",
+            "trains": "NJ 40466 / 40236",
+            "stops": ["vienna", "salzburg", "venice"],
+        },
+        {
+            "name": "Vienna — Florence — Rome",
+            "trains": "NJ 40233 / 40294",
+            "stops": ["vienna", "florence", "rome"],
+        },
+        {
+            "name": "Vienna — Zagreb",
+            "trains": "EN 1272 / 1273",
+            "stops": ["vienna", "zagreb"],
+        },
+        {
+            "name": "Munich — Venice",
+            "trains": "NJ 237 / 236",
+            "stops": ["munich", "salzburg", "venice"],
+        },
+        {
+            "name": "Munich — Florence — Rome",
+            "trains": "NJ 294 / 295",
+            "stops": ["rome", "florence", "salzburg", "munich"],
+        },
+        {
+            "name": "Munich — Hamburg",
+            "trains": "NJ 40420 / 40491",
+            "stops": ["munich", "hamburg"],
+        },
+        {
+            "name": "Munich — Vienna — Warsaw",
+            "trains": "EN 40406 / 40407",
+            "stops": ["munich", "salzburg", "vienna", "warsaw"],
+        },
+        {
+            "name": "Munich — Vienna — Krakow",
+            "trains": "EN 40416 / 40417",
+            "stops": ["munich", "salzburg", "vienna", "krakow"],
+        },
+        {
+            "name": "Munich — Vienna — Budapest",
+            "trains": "EN 50237 / 50462",
+            "stops": ["munich", "salzburg", "vienna", "budapest"],
+        },
+        {
+            "name": "Berlin — Prague — Budapest",
+            "trains": "EN 40457 / 40476",
+            "stops": ["berlin", "prague", "bratislava", "budapest"],
+        },
+        {
+            "name": "Budapest — Vienna — Zurich",
+            "trains": "EN 40462 / 40467",
+            "stops": ["budapest", "vienna", "salzburg", "zurich"],
+        },
+        {
+            "name": "Zurich — Basel — Frankfurt — Hamburg",
+            "trains": "NJ 470 / 471",
+            "stops": ["zurich", "basel", "frankfurt_main", "hamburg"],
+        },
+        {
+            "name": "Zurich — Basel — Frankfurt — Bonn",
+            "trains": "NJ 402 / 403",
+            "stops": ["zurich", "basel", "frankfurt_main", "bonn"],
+        },
+        {
+            "name": "Berlin — Frankfurt — Basel — Zurich",
+            "trains": "NJ 408 / 409",
+            "stops": ["berlin", "frankfurt_main", "basel", "zurich"],
+        },
+        {
+            "name": "Prague — Frankfurt — Basel — Zurich",
+            "trains": "EN 40458 / 40459",
+            "stops": ["prague", "frankfurt_main", "basel", "zurich"],
+        },
+        {
+            "name": "Zurich — Salzburg — Zagreb",
+            "trains": "EN 40465 / 40414",
+            "stops": ["zurich", "salzburg", "zagreb"],
+        },
+    ],
+    REGIOJET: [
+        {
+            "name": "Chop — Prague",
+            "trains": "RJ 1020 / 1021",
+            "stops": [
+                "chop", "kosice", "kysak", "margecany", "spisska_nova_ves",
+                "poprad", "strba", "liptovsky_mikulas", "ruzomberok", "vrutky",
+                "zilina", "cadca", "navsi", "bystrice_trinec", "trinec",
+                "cesky_tesin", "havirov", "ostrava", "bohumin", "opava",
+                "hranice_na_morave", "olomouc", "zabrezh_na_morave",
+                "ceska_trebova", "pardubice", "prague",
+            ],
+        },
+        {
+            "name": "Przemysl — Prague",
+            "trains": "RJ 1022 / 1023",
+            "stops": [
+                "premysl", "resov", "krakow", "ostrava", "olomouc",
+                "pardubice", "prague",
+            ],
+        },
+    ],
+}
+
 POPULAR_CITY_IDS = [
     "prague",
     "amsterdam",

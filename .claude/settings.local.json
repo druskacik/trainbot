@@ -2,7 +2,9 @@
   "permissions": {
     "allow": [
       "Bash(python3:*)",
-      "Bash(uv run:*)"
+      "Bash(uv run:*)",
+      "WebFetch(domain:www.nightjet.com)",
+      "WebFetch(domain:en.wikipedia.org)"
     ]
   }
 }
