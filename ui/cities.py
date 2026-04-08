@@ -5,9 +5,11 @@ from urllib.parse import urlencode
 
 EUROPEAN_SLEEPER = "europeansleeper"
 NIGHTJET = "nightjet"
+REGIOJET = "regiojet"
 
 EUROPEAN_SLEEPER_BOOKING_URL = "https://booking.europeansleeper.eu/en"
 NIGHTJET_BOOKING_URL = "https://shop.oebbtickets.at/en/ticket"
+REGIOJET_BOOKING_URL = "https://regiojet.com/"
 
 
 CITY_CATALOG = {
@@ -199,9 +201,11 @@ CITY_CATALOG = {
         "station_names": [
             "Krakow Glowny",
             "Krakow Plaszow",
+            "Cracow",
         ],
         "providers": {
             NIGHTJET: {"city_id": "5196001", "name": "Krakow"},
+            REGIOJET: {"city_id": "1225791000"},
         },
     },
     "munich": {
@@ -235,10 +239,12 @@ CITY_CATALOG = {
             "Prague Main Station",
             "Prague-Holesovice",
             "Praha-Holesovice",
+            "Prague",
         ],
         "providers": {
             EUROPEAN_SLEEPER: {"station_id": "5457076"},
             NIGHTJET: {"city_id": "5496001", "name": "Prague"},
+            REGIOJET: {"city_id": "10202003"},
         },
     },
     "rome": {
@@ -360,6 +366,249 @@ CITY_CATALOG = {
             NIGHTJET: {"city_id": "8596008", "name": "Zurich"},
         },
     },
+    "bohumin": {
+        "name": "Bohumín",
+        "station_names": [
+            "Bohumín",
+        ],
+        "providers": {
+            REGIOJET: {"city_id": "2147875000"},
+        },
+    },
+    "bystrice_trinec": {
+        "name": "Bystřice (Třinec)",
+        "station_names": [
+            "Bystřice (Třinec)",
+        ],
+        "providers": {
+            REGIOJET: {"city_id": "1313136001"},
+        },
+    },
+    "cadca": {
+        "name": "Čadca",
+        "station_names": [
+            "Čadca",
+        ],
+        "providers": {
+            REGIOJET: {"city_id": "508808002"},
+        },
+    },
+    "ceska_trebova": {
+        "name": "Česká Třebová",
+        "station_names": [
+            "Česká Třebová",
+        ],
+        "providers": {
+            REGIOJET: {"city_id": "1313136000"},
+        },
+    },
+    "cesky_tesin": {
+        "name": "Český Těšín",
+        "station_names": [
+            "Český Těšín",
+        ],
+        "providers": {
+            REGIOJET: {"city_id": "508808000"},
+        },
+    },
+    "chop": {
+        "name": "Chop",
+        "station_names": [
+            "Chop",
+        ],
+        "providers": {
+            REGIOJET: {"city_id": "7122881001"},
+        },
+    },
+    "havirov": {
+        "name": "Havířov",
+        "station_names": [
+            "Havířov",
+        ],
+        "providers": {
+            REGIOJET: {"city_id": "372842004"},
+        },
+    },
+    "hranice_na_morave": {
+        "name": "Hranice na Moravě",
+        "station_names": [
+            "Hranice na M.",
+        ],
+        "providers": {
+            REGIOJET: {"city_id": "372842003"},
+        },
+    },
+    "kosice": {
+        "name": "Košice",
+        "station_names": [
+            "Košice",
+        ],
+        "providers": {
+            REGIOJET: {"city_id": "10202033"},
+        },
+    },
+    "kysak": {
+        "name": "Kysak (Prešov)",
+        "station_names": [
+            "Kysak (u města Prešov)",
+        ],
+        "providers": {
+            REGIOJET: {"city_id": "1762994001"},
+        },
+    },
+    "liptovsky_mikulas": {
+        "name": "Liptovský Mikuláš",
+        "station_names": [
+            "Liptovský Mikuláš",
+        ],
+        "providers": {
+            REGIOJET: {"city_id": "10202036"},
+        },
+    },
+    "margecany": {
+        "name": "Margecany",
+        "station_names": [
+            "Margecany",
+        ],
+        "providers": {
+            REGIOJET: {"city_id": "2317706000"},
+        },
+    },
+    "navsi": {
+        "name": "Návsí (Jablunkov)",
+        "station_names": [
+            "Návsí (Jablunkov)",
+        ],
+        "providers": {
+            REGIOJET: {"city_id": "1558067000"},
+        },
+    },
+    "olomouc": {
+        "name": "Olomouc",
+        "station_names": [
+            "Olomouc",
+        ],
+        "providers": {
+            REGIOJET: {"city_id": "10202031"},
+        },
+    },
+    "opava": {
+        "name": "Opava východ",
+        "station_names": [
+            "Opava východ",
+        ],
+        "providers": {
+            REGIOJET: {"city_id": "3741270000"},
+        },
+    },
+    "ostrava": {
+        "name": "Ostrava",
+        "station_names": [
+            "Ostrava",
+        ],
+        "providers": {
+            REGIOJET: {"city_id": "10202000"},
+        },
+    },
+    "pardubice": {
+        "name": "Pardubice",
+        "station_names": [
+            "Pardubice",
+        ],
+        "providers": {
+            REGIOJET: {"city_id": "372842000"},
+        },
+    },
+    "poprad": {
+        "name": "Poprad",
+        "station_names": [
+            "Poprad",
+        ],
+        "providers": {
+            REGIOJET: {"city_id": "10202035"},
+        },
+    },
+    "premysl": {
+        "name": "Přemyšl",
+        "station_names": [
+            "Přemyšl",
+        ],
+        "providers": {
+            REGIOJET: {"city_id": "5990055004"},
+        },
+    },
+    "resov": {
+        "name": "Řešov",
+        "station_names": [
+            "Řešov",
+        ],
+        "providers": {
+            REGIOJET: {"city_id": "5990055007"},
+        },
+    },
+    "ruzomberok": {
+        "name": "Ružomberok",
+        "station_names": [
+            "Ružomberok",
+        ],
+        "providers": {
+            REGIOJET: {"city_id": "10202037"},
+        },
+    },
+    "spisska_nova_ves": {
+        "name": "Spišská Nová Ves",
+        "station_names": [
+            "Spišská Nová Ves",
+        ],
+        "providers": {
+            REGIOJET: {"city_id": "1762994000"},
+        },
+    },
+    "strba": {
+        "name": "Štrba",
+        "station_names": [
+            "Štrba",
+        ],
+        "providers": {
+            REGIOJET: {"city_id": "49584002"},
+        },
+    },
+    "trinec": {
+        "name": "Třinec centrum",
+        "station_names": [
+            "Třinec centrum",
+        ],
+        "providers": {
+            REGIOJET: {"city_id": "508808001"},
+        },
+    },
+    "vrutky": {
+        "name": "Vrútky",
+        "station_names": [
+            "Vrútky",
+        ],
+        "providers": {
+            REGIOJET: {"city_id": "49584000"},
+        },
+    },
+    "zabrezh_na_morave": {
+        "name": "Zábřeh na Moravě",
+        "station_names": [
+            "Zábřeh na Moravě",
+        ],
+        "providers": {
+            REGIOJET: {"city_id": "372842002"},
+        },
+    },
+    "zilina": {
+        "name": "Žilina",
+        "station_names": [
+            "Žilina",
+        ],
+        "providers": {
+            REGIOJET: {"city_id": "10202038"},
+        },
+    },
 }
 
 CITY_CONNECTIONS = {
@@ -373,26 +622,44 @@ CITY_CONNECTIONS = {
     "bratislava": ["berlin", "budapest", "prague"],
     "brussels": ["amersfoort", "amsterdam", "bad_schandau", "berlin", "decin", "deventer", "dresden", "paris", "prague", "roosendaal", "rotterdam", "the_hague", "usti_nad_labem"],
     "budapest": ["berlin", "bratislava", "munich", "prague", "salzburg", "vienna", "zurich"],
+    "cadca": ["bohumin", "ceska_trebova", "chop", "havirov", "hranice_na_morave", "kosice", "kysak", "liptovsky_mikulas", "margecany", "olomouc", "ostrava", "pardubice", "poprad", "prague", "ruzomberok", "spisska_nova_ves", "strba", "vrutky", "zabrezh_na_morave", "zilina"],
+    "chop": ["bohumin", "cadca", "ceska_trebova", "havirov", "hranice_na_morave", "kosice", "kysak", "liptovsky_mikulas", "margecany", "olomouc", "ostrava", "pardubice", "poprad", "prague", "ruzomberok", "spisska_nova_ves", "strba", "vrutky", "zabrezh_na_morave", "zilina"],
     "decin": ["amersfoort", "amsterdam", "antwerp", "bad_schandau", "berlin", "brussels", "deventer", "dresden", "roosendaal", "rotterdam", "the_hague"],
     "deventer": ["antwerp", "bad_schandau", "berlin", "brussels", "decin", "dresden", "prague", "usti_nad_labem"],
     "dresden": ["amersfoort", "amsterdam", "antwerp", "bad_schandau", "berlin", "brussels", "decin", "deventer", "prague", "roosendaal", "rotterdam", "the_hague", "usti_nad_labem"],
     "florence": ["munich", "rome", "salzburg", "vienna"],
     "frankfurt_main": ["basel", "berlin", "bonn", "hamburg", "prague", "zurich"],
     "hamburg": ["basel", "frankfurt_main", "munich", "salzburg", "vienna", "zurich"],
-    "krakow": ["munich", "salzburg", "vienna"],
+    "havirov": ["cadca", "ceska_trebova", "chop", "kosice", "kysak", "liptovsky_mikulas", "margecany", "olomouc", "ostrava", "pardubice", "poprad", "prague", "ruzomberok", "spisska_nova_ves", "strba", "vrutky", "zabrezh_na_morave", "zilina"],
+    "kosice": ["bohumin", "cadca", "ceska_trebova", "chop", "havirov", "hranice_na_morave", "kysak", "liptovsky_mikulas", "margecany", "olomouc", "ostrava", "pardubice", "poprad", "prague", "ruzomberok", "spisska_nova_ves", "strba", "vrutky", "zabrezh_na_morave", "zilina"],
+    "krakow": ["munich", "olomouc", "ostrava", "pardubice", "prague", "premysl", "resov", "salzburg", "vienna"],
+    "kysak": ["bohumin", "cadca", "ceska_trebova", "chop", "havirov", "hranice_na_morave", "kosice", "liptovsky_mikulas", "margecany", "olomouc", "ostrava", "pardubice", "poprad", "prague", "ruzomberok", "spisska_nova_ves", "strba", "vrutky", "zabrezh_na_morave", "zilina"],
+    "liptovsky_mikulas": ["bohumin", "cadca", "ceska_trebova", "chop", "havirov", "hranice_na_morave", "kosice", "kysak", "margecany", "olomouc", "ostrava", "pardubice", "poprad", "prague", "ruzomberok", "spisska_nova_ves", "strba", "vrutky", "zabrezh_na_morave", "zilina"],
+    "margecany": ["bohumin", "cadca", "ceska_trebova", "chop", "havirov", "hranice_na_morave", "kosice", "kysak", "liptovsky_mikulas", "olomouc", "opava", "ostrava", "pardubice", "poprad", "prague", "ruzomberok", "spisska_nova_ves", "strba", "vrutky", "zabrezh_na_morave", "zilina"],
     "munich": ["bonn", "budapest", "florence", "hamburg", "krakow", "rome", "salzburg", "venice", "vienna", "warsaw", "zagreb"],
+    "olomouc": ["cadca", "chop", "havirov", "kosice", "krakow", "kysak", "liptovsky_mikulas", "margecany", "ostrava", "pardubice", "poprad", "prague", "premysl", "resov", "ruzomberok", "spisska_nova_ves", "strba", "vrutky", "zilina"],
+    "ostrava": ["cadca", "chop", "havirov", "kosice", "krakow", "kysak", "liptovsky_mikulas", "margecany", "olomouc", "pardubice", "poprad", "prague", "premysl", "resov", "ruzomberok", "spisska_nova_ves", "strba", "vrutky", "zilina"],
+    "pardubice": ["cadca", "chop", "havirov", "kosice", "krakow", "kysak", "liptovsky_mikulas", "margecany", "olomouc", "ostrava", "poprad", "prague", "premysl", "resov", "ruzomberok", "spisska_nova_ves", "strba", "vrutky", "zilina"],
     "paris": ["berlin", "brussels"],
-    "prague": ["amersfoort", "amsterdam", "antwerp", "bad_schandau", "basel", "berlin", "bratislava", "brussels", "budapest", "deventer", "dresden", "frankfurt_main", "roosendaal", "rotterdam", "the_hague", "vienna", "zurich"],
+    "poprad": ["bohumin", "cadca", "ceska_trebova", "chop", "havirov", "hranice_na_morave", "kosice", "kysak", "liptovsky_mikulas", "margecany", "olomouc", "ostrava", "pardubice", "prague", "ruzomberok", "spisska_nova_ves", "strba", "vrutky", "zabrezh_na_morave", "zilina"],
+    "prague": ["amersfoort", "amsterdam", "antwerp", "bad_schandau", "basel", "berlin", "bratislava", "brussels", "budapest", "cadca", "chop", "deventer", "dresden", "frankfurt_main", "havirov", "kosice", "krakow", "kysak", "liptovsky_mikulas", "margecany", "olomouc", "ostrava", "pardubice", "poprad", "premysl", "resov", "roosendaal", "rotterdam", "ruzomberok", "spisska_nova_ves", "strba", "the_hague", "vienna", "vrutky", "zilina", "zurich"],
+    "premysl": ["krakow", "olomouc", "ostrava", "pardubice", "prague", "resov"],
+    "resov": ["krakow", "olomouc", "ostrava", "pardubice", "prague", "premysl"],
     "rome": ["florence", "munich", "salzburg", "vienna"],
     "roosendaal": ["antwerp", "bad_schandau", "berlin", "brussels", "decin", "dresden", "prague", "usti_nad_labem"],
     "rotterdam": ["antwerp", "bad_schandau", "berlin", "brussels", "decin", "dresden", "prague", "usti_nad_labem"],
+    "ruzomberok": ["bohumin", "cadca", "ceska_trebova", "chop", "havirov", "hranice_na_morave", "kosice", "liptovsky_mikulas", "margecany", "olomouc", "ostrava", "pardubice", "poprad", "prague", "spisska_nova_ves", "strba", "vrutky", "zabrezh_na_morave", "zilina"],
     "salzburg": ["bonn", "budapest", "florence", "hamburg", "krakow", "munich", "rome", "venice", "vienna", "warsaw", "zagreb", "zurich"],
+    "spisska_nova_ves": ["bohumin", "cadca", "ceska_trebova", "chop", "havirov", "hranice_na_morave", "kosice", "kysak", "liptovsky_mikulas", "margecany", "olomouc", "ostrava", "pardubice", "poprad", "prague", "ruzomberok", "strba", "vrutky", "zabrezh_na_morave", "zilina"],
+    "strba": ["bohumin", "cadca", "ceska_trebova", "chop", "havirov", "hranice_na_morave", "kosice", "kysak", "liptovsky_mikulas", "margecany", "olomouc", "ostrava", "pardubice", "prague", "ruzomberok", "spisska_nova_ves", "vrutky", "zabrezh_na_morave", "zilina"],
     "the_hague": ["antwerp", "bad_schandau", "berlin", "brussels", "decin", "dresden", "prague", "usti_nad_labem"],
     "usti_nad_labem": ["amersfoort", "amsterdam", "antwerp", "bad_schandau", "berlin", "brussels", "deventer", "dresden", "roosendaal", "rotterdam", "the_hague"],
     "venice": ["munich", "salzburg", "vienna"],
     "vienna": ["berlin", "bonn", "budapest", "florence", "hamburg", "krakow", "munich", "prague", "rome", "salzburg", "venice", "warsaw", "zagreb", "zurich"],
+    "vrutky": ["bohumin", "cadca", "ceska_trebova", "chop", "havirov", "hranice_na_morave", "kysak", "liptovsky_mikulas", "margecany", "olomouc", "ostrava", "pardubice", "poprad", "prague", "ruzomberok", "spisska_nova_ves", "strba", "zabrezh_na_morave", "zilina"],
     "warsaw": ["munich", "salzburg", "vienna"],
     "zagreb": ["munich", "salzburg", "vienna", "zurich"],
+    "zilina": ["bohumin", "cadca", "ceska_trebova", "chop", "havirov", "hranice_na_morave", "kosice", "kysak", "liptovsky_mikulas", "margecany", "olomouc", "ostrava", "pardubice", "poprad", "prague", "ruzomberok", "spisska_nova_ves", "strba", "vrutky", "zabrezh_na_morave"],
     "zurich": ["basel", "berlin", "bonn", "budapest", "frankfurt_main", "hamburg", "prague", "salzburg", "vienna", "zagreb"],
 }
 
@@ -410,6 +677,7 @@ DEFAULT_END_CITY_ID = "amsterdam"
 PROVIDER_DISPLAY_NAMES = {
     EUROPEAN_SLEEPER: "European Sleeper",
     NIGHTJET: "NightJet",
+    REGIOJET: "RegioJet",
 }
 
 
@@ -457,6 +725,25 @@ def build_booking_url(
     end_city = get_city(end_city_id)
     if not start_city or not end_city:
         return None
+
+    if source == REGIOJET:
+        start_rj = start_city.get("providers", {}).get(REGIOJET, {})
+        end_rj = end_city.get("providers", {}).get(REGIOJET, {})
+        start_city_id_rj = start_rj.get("city_id")
+        end_city_id_rj = end_rj.get("city_id")
+        if not start_city_id_rj or not end_city_id_rj:
+            return None
+        params = {
+            "departureDate": departure_date.strftime("%Y-%m-%d"),
+            "tariffs": "REGULAR",
+            "fromLocationId": start_city_id_rj,
+            "fromLocationType": "CITY",
+            "toLocationId": end_city_id_rj,
+            "toLocationType": "CITY",
+        }
+        if return_date is not None:
+            params["returnDepartureDate"] = return_date.strftime("%Y-%m-%d")
+        return f"{REGIOJET_BOOKING_URL}?{urlencode(params)}"
 
     if source == NIGHTJET:
         start_name = (
