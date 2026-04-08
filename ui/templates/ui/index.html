@@ -39,15 +39,29 @@
                 <div class="row-group">
                     <div class="form-group">
                         <label for="start-station">From</label>
-                        <select id="start-station" name="start_id" class="station-select">
-                            <option value="" disabled selected>Loading cities...</option>
-                        </select>
+                        <div class="combobox-wrapper">
+                            <input type="hidden" name="start_id" value="">
+                            <input type="text" id="start-station" class="combobox-input"
+                                role="combobox" aria-expanded="false" aria-autocomplete="list"
+                                aria-controls="start-station-listbox" aria-activedescendant=""
+                                autocomplete="off" placeholder="Loading cities...">
+                            <ul id="start-station-listbox" class="combobox-listbox" role="listbox"
+                                aria-label="Departure cities" hidden></ul>
+                            <span class="combobox-live" aria-live="polite" aria-atomic="true"></span>
+                        </div>
                     </div>
                     <div class="form-group">
                         <label for="end-station">To</label>
-                        <select id="end-station" name="end_id" class="station-select">
-                            <option value="" disabled selected>Loading cities...</option>
-                        </select>
+                        <div class="combobox-wrapper">
+                            <input type="hidden" name="end_id" value="">
+                            <input type="text" id="end-station" class="combobox-input"
+                                role="combobox" aria-expanded="false" aria-autocomplete="list"
+                                aria-controls="end-station-listbox" aria-activedescendant=""
+                                autocomplete="off" placeholder="Loading cities...">
+                            <ul id="end-station-listbox" class="combobox-listbox" role="listbox"
+                                aria-label="Destination cities" hidden></ul>
+                            <span class="combobox-live" aria-live="polite" aria-atomic="true"></span>
+                        </div>
                     </div>
                 </div>
 

@@ -11,8 +11,6 @@ document.addEventListener('DOMContentLoaded', () => {
     const noResultsState = document.getElementById('no-results-state');
     const formError = document.getElementById('form-error');
 
-    const startStationSelect = document.getElementById('start-station');
-    const endStationSelect = document.getElementById('end-station');
     let allCities = [];
     let cityConnections = {};
 
@@ -28,23 +26,255 @@ document.addEventListener('DOMContentLoaded', () => {
 
     const POPULAR_CITY_IDS = ['prague', 'amsterdam', 'brussels', 'berlin', 'paris', 'vienna'];
 
-    function buildCityOptionsHTML(cities) {
-        const byId = new Map(cities.map(city => [city.id, city]));
-        const popular = POPULAR_CITY_IDS.map(id => byId.get(id)).filter(Boolean);
-        const rest = cities.filter(city => !POPULAR_CITY_IDS.includes(city.id)).sort((a, b) => a.name.localeCompare(b.name));
+    class Combobox {
+        constructor({ inputId, listboxId, placeholder }) {
+            this.input = document.getElementById(inputId);
+            this.listbox = document.getElementById(listboxId);
+            this.hidden = this.input.parentElement.querySelector('input[type="hidden"]');
+            this.liveRegion = this.input.parentElement.querySelector('.combobox-live');
+            this.wrapper = this.input.parentElement;
+            this.placeholder = placeholder;
 
-        let html = '';
-        if (popular.length > 0) {
-            html += '<optgroup label="Popular">';
-            html += popular.map(city => `<option value="${city.id}">${city.name}</option>`).join('');
-            html += '</optgroup>';
+            this.cities = [];
+            this.flatOptions = [];
+            this.selectedId = '';
+            this.activeIndex = -1;
+            this.isOpen = false;
+            this.onChange = null;
+
+            this._bindEvents();
         }
-        if (rest.length > 0) {
-            html += '<optgroup label="Other cities">';
-            html += rest.map(city => `<option value="${city.id}">${city.name}</option>`).join('');
-            html += '</optgroup>';
+
+        _bindEvents() {
+            this.input.addEventListener('focus', () => {
+                if (this.selectedId) {
+                    this.input.select();
+                }
+                this._open();
+            });
+
+            this.input.addEventListener('input', () => {
+                this.hidden.value = '';
+                this.selectedId = '';
+                this._filter(this.input.value);
+                if (!this.isOpen) this._open();
+            });
+
+            this.input.addEventListener('keydown', (e) => this._onKeydown(e));
+
+            this.input.addEventListener('blur', () => {
+                requestAnimationFrame(() => {
+                    if (this.wrapper.contains(document.activeElement)) return;
+                    this._close();
+                });
+            });
+
+            this.listbox.addEventListener('mousedown', (e) => {
+                e.preventDefault();
+                const option = e.target.closest('[role="option"]');
+                if (option) {
+                    this.selectCity(option.dataset.cityId);
+                }
+            });
+
+            this.listbox.addEventListener('mousemove', (e) => {
+                const option = e.target.closest('[role="option"]');
+                if (option) {
+                    const idx = this.flatOptions.indexOf(option);
+                    if (idx !== -1 && idx !== this.activeIndex) {
+                        this._setActiveIndex(idx);
+                    }
+                }
+            });
+
+            document.addEventListener('mousedown', (e) => {
+                if (this.isOpen && !this.wrapper.contains(e.target)) {
+                    this._close();
+                }
+            });
         }
-        return html;
+
+        _onKeydown(e) {
+            switch (e.key) {
+                case 'ArrowDown':
+                    e.preventDefault();
+                    if (!this.isOpen) { this._open(); return; }
+                    this._setActiveIndex(this.activeIndex < this.flatOptions.length - 1 ? this.activeIndex + 1 : 0);
+                    break;
+                case 'ArrowUp':
+                    e.preventDefault();
+                    if (!this.isOpen) { this._open(); return; }
+                    this._setActiveIndex(this.activeIndex > 0 ? this.activeIndex - 1 : this.flatOptions.length - 1);
+                    break;
+                case 'Enter':
+                    if (this.isOpen && this.activeIndex >= 0) {
+                        e.preventDefault();
+                        const opt = this.flatOptions[this.activeIndex];
+                        if (opt) this.selectCity(opt.dataset.cityId);
+                    }
+                    break;
+                case 'Escape':
+                    if (this.isOpen) {
+                        e.preventDefault();
+                        this._close();
+                    }
+                    break;
+                case 'Tab':
+                    if (this.isOpen && this.activeIndex >= 0) {
+                        const opt = this.flatOptions[this.activeIndex];
+                        if (opt) this.selectCity(opt.dataset.cityId);
+                    }
+                    break;
+                case 'Home':
+                    if (this.isOpen && this.flatOptions.length > 0) {
+                        e.preventDefault();
+                        this._setActiveIndex(0);
+                    }
+                    break;
+                case 'End':
+                    if (this.isOpen && this.flatOptions.length > 0) {
+                        e.preventDefault();
+                        this._setActiveIndex(this.flatOptions.length - 1);
+                    }
+                    break;
+            }
+        }
+
+        _open() {
+            if (this.isOpen) return;
+            this.isOpen = true;
+            this.input.setAttribute('aria-expanded', 'true');
+            this._filter(this.input.value === this._getNameById(this.selectedId) ? '' : this.input.value);
+            this.listbox.hidden = false;
+        }
+
+        _close() {
+            if (!this.isOpen) return;
+            this.isOpen = false;
+            this.input.setAttribute('aria-expanded', 'false');
+            this.listbox.hidden = true;
+            this.activeIndex = -1;
+            this.input.setAttribute('aria-activedescendant', '');
+
+            if (this.selectedId) {
+                this.input.value = this._getNameById(this.selectedId);
+            } else {
+                const typed = this.input.value.trim().toLowerCase();
+                const match = this.cities.find(c => c.name.toLowerCase() === typed);
+                if (match) {
+                    this.selectCity(match.id);
+                } else {
+                    this.input.value = '';
+                    this.hidden.value = '';
+                }
+            }
+        }
+
+        _filter(query) {
+            const q = (query || '').trim().toLowerCase();
+            const filtered = q
+                ? this.cities.filter(c => c.name.toLowerCase().includes(q))
+                : this.cities;
+
+            this._renderOptions(filtered, q);
+        }
+
+        _renderOptions(cities, query) {
+            const listboxId = this.listbox.id;
+            const byId = new Map(cities.map(c => [c.id, c]));
+            const popular = POPULAR_CITY_IDS.map(id => byId.get(id)).filter(Boolean);
+            const rest = cities.filter(c => !POPULAR_CITY_IDS.includes(c.id))
+                .sort((a, b) => a.name.localeCompare(b.name));
+
+            let html = '';
+            const addGroup = (label, items) => {
+                if (items.length === 0) return;
+                html += `<li role="presentation" class="combobox-group-label">${label}</li>`;
+                items.forEach(city => {
+                    const optId = `${listboxId}-opt-${city.id}`;
+                    const selected = city.id === this.selectedId ? ' aria-selected="true"' : '';
+                    const displayName = query ? this._highlightMatch(city.name, query) : city.name;
+                    html += `<li role="option" id="${optId}" class="combobox-option" data-city-id="${city.id}"${selected}>${displayName}</li>`;
+                });
+            };
+
+            addGroup('Popular', popular);
+            addGroup('Other cities', rest);
+
+            if (cities.length === 0) {
+                html = '<li class="combobox-no-results" role="presentation">No cities found</li>';
+            }
+
+            this.listbox.innerHTML = html;
+            this.flatOptions = Array.from(this.listbox.querySelectorAll('[role="option"]'));
+            this.activeIndex = -1;
+            this.input.setAttribute('aria-activedescendant', '');
+
+            const count = cities.length;
+            this.liveRegion.textContent = count === 0
+                ? 'No cities found'
+                : `${count} ${count === 1 ? 'city' : 'cities'} available`;
+        }
+
+        _highlightMatch(name, query) {
+            const idx = name.toLowerCase().indexOf(query);
+            if (idx === -1) return name;
+            const before = name.slice(0, idx);
+            const match = name.slice(idx, idx + query.length);
+            const after = name.slice(idx + query.length);
+            return `${before}<mark>${match}</mark>${after}`;
+        }
+
+        _setActiveIndex(index) {
+            if (this.activeIndex >= 0 && this.activeIndex < this.flatOptions.length) {
+                this.flatOptions[this.activeIndex].classList.remove('combobox-option--active');
+            }
+            this.activeIndex = index;
+            const opt = this.flatOptions[index];
+            if (opt) {
+                opt.classList.add('combobox-option--active');
+                this.input.setAttribute('aria-activedescendant', opt.id);
+                opt.scrollIntoView({ block: 'nearest' });
+            }
+        }
+
+        selectCity(cityId) {
+            this.selectedId = cityId;
+            this.hidden.value = cityId;
+            this.input.value = this._getNameById(cityId);
+            this._close();
+            if (this.onChange) this.onChange(cityId);
+        }
+
+        setCities(cities) {
+            this.cities = cities;
+            if (this.selectedId && !cities.some(c => c.id === this.selectedId)) {
+                this.selectedId = '';
+                this.hidden.value = '';
+                this.input.value = '';
+            }
+            if (this.isOpen) {
+                this._filter(this.input.value === this._getNameById(this.selectedId) ? '' : this.input.value);
+            }
+        }
+
+        setValue(cityId) {
+            const city = this.cities.find(c => c.id === cityId);
+            if (city) {
+                this.selectedId = cityId;
+                this.hidden.value = cityId;
+                this.input.value = city.name;
+            }
+        }
+
+        getSelectedId() {
+            return this.selectedId;
+        }
+
+        _getNameById(id) {
+            const city = this.cities.find(c => c.id === id);
+            return city ? city.name : '';
+        }
     }
 
     function formatPrice(amount, currency) {
@@ -162,62 +392,68 @@ document.addEventListener('DOMContentLoaded', () => {
         return card;
     }
 
-    const buildDestinationOptionsHTML = (fromCityId) => {
-        const placeholderEnd = '<option value="" disabled>Select destination city...</option>';
-        const allowedIds = (cityConnections && fromCityId) ? cityConnections[fromCityId] : null;
+    const startCombobox = new Combobox({
+        inputId: 'start-station',
+        listboxId: 'start-station-listbox',
+        placeholder: 'Select departure city...',
+    });
 
-        const baseCities = Array.isArray(allowedIds) && allowedIds.length > 0
+    const endCombobox = new Combobox({
+        inputId: 'end-station',
+        listboxId: 'end-station-listbox',
+        placeholder: 'Select destination city...',
+    });
+
+    function getDestinationCities(fromCityId) {
+        const allowedIds = (cityConnections && fromCityId) ? cityConnections[fromCityId] : null;
+        return Array.isArray(allowedIds) && allowedIds.length > 0
             ? allCities.filter(city => allowedIds.includes(city.id))
             : allCities;
+    }
 
-        const optionsHTML = buildCityOptionsHTML(baseCities);
-        return placeholderEnd + optionsHTML;
+    startCombobox.onChange = (cityId) => {
+        endCombobox.setCities(getDestinationCities(cityId));
     };
 
     const loadCities = async () => {
         try {
             const response = await fetch('/api/stations');
             const result = await response.json();
-            
+
             if (result.status === 'success') {
                 allCities = Array.isArray(result.data) ? result.data : [];
                 cityConnections = result.connections || {};
-                const optionsHTML = buildCityOptionsHTML(allCities);
 
-                const placeholderStart = '<option value="" disabled>Select departure city...</option>';
-                startStationSelect.innerHTML = placeholderStart + optionsHTML;
+                startCombobox.setCities(allCities);
+                startCombobox.input.placeholder = 'Select departure city...';
 
                 const pragueId = 'prague';
                 const amsterdamId = 'amsterdam';
+
                 if (allCities.some(city => city.id === pragueId)) {
-                    startStationSelect.value = pragueId;
+                    startCombobox.setValue(pragueId);
                 }
 
-                const initialFromId = startStationSelect.value || '';
-                endStationSelect.innerHTML = buildDestinationOptionsHTML(initialFromId);
+                endCombobox.setCities(getDestinationCities(startCombobox.getSelectedId()));
+                endCombobox.input.placeholder = 'Select destination city...';
 
+                const fromId = startCombobox.getSelectedId();
                 const canDefaultToAmsterdam =
-                    initialFromId &&
+                    fromId &&
                     allCities.some(city => city.id === amsterdamId) &&
-                    Array.isArray(cityConnections[initialFromId]) &&
-                    cityConnections[initialFromId].includes(amsterdamId);
+                    Array.isArray(cityConnections[fromId]) &&
+                    cityConnections[fromId].includes(amsterdamId);
 
                 if (canDefaultToAmsterdam) {
-                    endStationSelect.value = amsterdamId;
+                    endCombobox.setValue(amsterdamId);
                 }
             }
         } catch (error) {
             console.error('Failed to load cities:', error);
-            startStationSelect.innerHTML = '<option value="" disabled>Error loading cities</option>';
-            endStationSelect.innerHTML = '<option value="" disabled>Error loading cities</option>';
+            startCombobox.input.placeholder = 'Error loading cities';
+            endCombobox.input.placeholder = 'Error loading cities';
         }
     };
-    
-    startStationSelect.addEventListener('change', () => {
-        const fromCityId = startStationSelect.value || '';
-        endStationSelect.innerHTML = buildDestinationOptionsHTML(fromCityId);
-        endStationSelect.value = '';
-    });
 
     loadCities();
 
