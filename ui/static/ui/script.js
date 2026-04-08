@@ -1,3 +1,7 @@
+function stripDiacritics(str) {
+    return str.normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+}
+
 document.addEventListener('DOMContentLoaded', () => {
     const form = document.getElementById('search-form');
     const returnParamsGroup = document.getElementById('return-params-group');
@@ -171,9 +175,9 @@ document.addEventListener('DOMContentLoaded', () => {
         }
 
         _filter(query) {
-            const q = (query || '').trim().toLowerCase();
+            const q = stripDiacritics((query || '').trim().toLowerCase());
             const filtered = q
-                ? this.cities.filter(c => c.name.toLowerCase().includes(q))
+                ? this.cities.filter(c => stripDiacritics(c.name.toLowerCase()).includes(q))
                 : this.cities;
 
             this._renderOptions(filtered, q);
@@ -217,7 +221,7 @@ document.addEventListener('DOMContentLoaded', () => {
         }
 
         _highlightMatch(name, query) {
-            const idx = name.toLowerCase().indexOf(query);
+            const idx = stripDiacritics(name.toLowerCase()).indexOf(query);
             if (idx === -1) return name;
             const before = name.slice(0, idx);
             const match = name.slice(idx, idx + query.length);
