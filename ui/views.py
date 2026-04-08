@@ -101,13 +101,11 @@ def coverage(request):
         all_cities = set()
         for r in raw_routes:
             resolved = [CITY_CATALOG[cid]["name"] for cid in r["stops"]]
-            expanded = len(resolved) >= 5
             routes.append({
                 "name": r["name"],
                 "trains": r["trains"],
                 "stops": resolved,
-                "expanded": expanded,
-                "endpoints": f"{resolved[0]} — {resolved[-1]}" if expanded else "",
+                "endpoints": f"{resolved[0]} — {resolved[-1]}",
             })
             all_cities.update(r["stops"])
         p["routes"] = routes

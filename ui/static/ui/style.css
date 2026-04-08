@@ -1175,12 +1175,8 @@ fieldset {
 
 .route-row {
     display: flex;
-    align-items: baseline;
-    gap: var(--space-sm) var(--space-md);
-}
-
-.route-row--expanded {
     flex-direction: column;
+    gap: var(--space-xs);
 }
 
 .route-label {

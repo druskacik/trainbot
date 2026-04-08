@@ -784,23 +784,23 @@ PROVIDER_ROUTES = {
     ],
     REGIOJET: [
         {
-            "name": "Chop — Prague",
+            "name": "Prague — Chop",
             "trains": "RJ 1020 / 1021",
             "stops": [
-                "chop", "kosice", "kysak", "margecany", "spisska_nova_ves",
-                "poprad", "strba", "liptovsky_mikulas", "ruzomberok", "vrutky",
-                "zilina", "cadca", "navsi", "bystrice_trinec", "trinec",
-                "cesky_tesin", "havirov", "ostrava", "bohumin", "opava",
-                "hranice_na_morave", "olomouc", "zabrezh_na_morave",
-                "ceska_trebova", "pardubice", "prague",
+                "prague", "pardubice", "ceska_trebova", "zabrezh_na_morave",
+                "olomouc", "hranice_na_morave", "opava", "bohumin", "ostrava",
+                "havirov", "cesky_tesin", "trinec", "bystrice_trinec", "navsi",
+                "cadca", "zilina", "vrutky", "ruzomberok", "liptovsky_mikulas",
+                "strba", "poprad", "spisska_nova_ves", "margecany", "kysak",
+                "kosice", "chop",
             ],
         },
         {
-            "name": "Przemysl — Prague",
+            "name": "Prague — Przemysl",
             "trains": "RJ 1022 / 1023",
             "stops": [
-                "premysl", "resov", "krakow", "ostrava", "olomouc",
-                "pardubice", "prague",
+                "prague", "pardubice", "olomouc", "ostrava", "krakow",
+                "resov", "premysl",
             ],
         },
     ],

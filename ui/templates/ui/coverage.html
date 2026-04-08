@@ -46,20 +46,14 @@
                 </div>
                 <div class="route-list" aria-label="{{ provider.name }} routes">
                     {% for route in provider.routes %}
-                    <div class="route-row{% if route.expanded %} route-row--expanded{% endif %}">
+                    <div class="route-row">
                         <span class="route-label">{{ route.trains }}</span>
-                        {% if route.expanded %}
                         <div class="route-detail">
                             <span class="route-endpoints">{{ route.endpoints }}</span>
                             <span class="route-stops">
                                 {% for stop in route.stops %}{% if not forloop.first %}<span class="route-arrow" aria-hidden="true"> — </span>{% endif %}<span class="city-tag">{{ stop }}</span>{% endfor %}
                             </span>
                         </div>
-                        {% else %}
-                        <span class="route-stops">
-                            {% for stop in route.stops %}{% if not forloop.first %}<span class="route-arrow" aria-hidden="true"> — </span>{% endif %}<span class="city-tag">{{ stop }}</span>{% endfor %}
-                        </span>
-                        {% endif %}
                     </div>
                     {% endfor %}
                 </div>
