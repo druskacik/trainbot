@@ -177,6 +177,7 @@ body {
     text-align: center;
     padding-bottom: var(--space-2xl);
     position: relative;
+    z-index: 300;
     animation: fadeInDown 0.9s var(--ease-out-quart) both;
     width: 100%;
     max-width: 1000px;
