@@ -111,9 +111,10 @@ document.addEventListener('DOMContentLoaded', () => {
                     this._setActiveIndex(this.activeIndex > 0 ? this.activeIndex - 1 : this.flatOptions.length - 1);
                     break;
                 case 'Enter':
-                    if (this.isOpen && this.activeIndex >= 0) {
+                    if (this.isOpen && this.flatOptions.length > 0) {
                         e.preventDefault();
-                        const opt = this.flatOptions[this.activeIndex];
+                        const idx = this.activeIndex >= 0 ? this.activeIndex : 0;
+                        const opt = this.flatOptions[idx];
                         if (opt) this.selectCity(opt.dataset.cityId);
                     }
                     break;
@@ -124,8 +125,9 @@ document.addEventListener('DOMContentLoaded', () => {
                     }
                     break;
                 case 'Tab':
-                    if (this.isOpen && this.activeIndex >= 0) {
-                        const opt = this.flatOptions[this.activeIndex];
+                    if (this.isOpen && this.flatOptions.length > 0) {
+                        const idx = this.activeIndex >= 0 ? this.activeIndex : 0;
+                        const opt = this.flatOptions[idx];
                         if (opt) this.selectCity(opt.dataset.cityId);
                     }
                     break;
