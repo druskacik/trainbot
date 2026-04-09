@@ -994,7 +994,8 @@ fieldset {
     }
 
     .top-bar {
-        padding: var(--space-md) var(--space-lg) 0;
+        top: var(--space-2xl);
+        padding: 0 var(--space-lg);
     }
 
     .main-header::after {
