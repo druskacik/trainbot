@@ -431,25 +431,57 @@ document.addEventListener('DOMContentLoaded', () => {
                 startCombobox.setCities(allCities);
                 startCombobox.input.placeholder = 'Select departure city...';
 
-                const pragueId = 'prague';
-                const amsterdamId = 'amsterdam';
+                // Restore form state from URL query parameters, or fall back to defaults
+                const urlParams = new URLSearchParams(window.location.search);
+                const urlFrom = urlParams.get('from');
+                const urlTo = urlParams.get('to');
+                const urlType = urlParams.get('type');
+                const urlMaxDuration = urlParams.get('max_duration');
+                const urlSeatType = urlParams.get('seat_type');
+                const hasUrlParams = urlFrom || urlTo;
 
-                if (allCities.some(city => city.id === pragueId)) {
-                    startCombobox.setValue(pragueId);
+                if (urlFrom && allCities.some(c => c.id === urlFrom)) {
+                    startCombobox.setValue(urlFrom);
+                } else if (!hasUrlParams && allCities.some(c => c.id === 'prague')) {
+                    startCombobox.setValue('prague');
                 }
 
                 endCombobox.setCities(getDestinationCities(startCombobox.getSelectedId()));
                 endCombobox.input.placeholder = 'Select destination city...';
 
-                const fromId = startCombobox.getSelectedId();
-                const canDefaultToAmsterdam =
-                    fromId &&
-                    allCities.some(city => city.id === amsterdamId) &&
-                    Array.isArray(cityConnections[fromId]) &&
-                    cityConnections[fromId].includes(amsterdamId);
+                if (urlTo && allCities.some(c => c.id === urlTo)) {
+                    endCombobox.setValue(urlTo);
+                } else if (!hasUrlParams) {
+                    const fromId = startCombobox.getSelectedId();
+                    const canDefaultToAmsterdam =
+                        fromId &&
+                        allCities.some(city => city.id === 'amsterdam') &&
+                        Array.isArray(cityConnections[fromId]) &&
+                        cityConnections[fromId].includes('amsterdam');
+                    if (canDefaultToAmsterdam) {
+                        endCombobox.setValue('amsterdam');
+                    }
+                }
 
-                if (canDefaultToAmsterdam) {
-                    endCombobox.setValue(amsterdamId);
+                // Restore other form fields from URL
+                if (urlType === 'return') {
+                    document.getElementById('type-return').checked = true;
+                    returnParamsGroup.classList.remove('hidden');
+                    returnParamsGroup.classList.add('is-visible');
+                }
+                if (urlMaxDuration) {
+                    document.getElementById('max-duration').value = urlMaxDuration;
+                }
+                if (urlSeatType === 'couchette') {
+                    document.getElementById('seat-couchette').checked = true;
+                } else if (urlSeatType === 'seat') {
+                    const seatRadio = document.querySelector('input[name="seat_type"][value="seat"]');
+                    if (seatRadio) seatRadio.checked = true;
+                }
+
+                // Auto-search if both from and to are specified in URL
+                if (urlFrom && urlTo && startCombobox.getSelectedId() && endCombobox.getSelectedId()) {
+                    form.requestSubmit();
                 }
             }
         } catch (error) {
@@ -569,7 +601,19 @@ document.addEventListener('DOMContentLoaded', () => {
 
         const formData = new FormData(form);
         const searchParams = new URLSearchParams(formData);
-        
+
+        // Update URL with search parameters
+        const urlParams = new URLSearchParams();
+        if (formData.get('start_id')) urlParams.set('from', formData.get('start_id'));
+        if (formData.get('end_id')) urlParams.set('to', formData.get('end_id'));
+        if (formData.get('type') && formData.get('type') !== 'single') urlParams.set('type', formData.get('type'));
+        if (formData.get('seat_type') && formData.get('seat_type') !== 'any') urlParams.set('seat_type', formData.get('seat_type'));
+        if (formData.get('type') === 'return' && formData.get('max_duration') && formData.get('max_duration') !== '14') {
+            urlParams.set('max_duration', formData.get('max_duration'));
+        }
+        const qs = urlParams.toString();
+        history.replaceState(null, '', qs ? `?${qs}` : '/');
+
         if (!formData.get('start_id') || !formData.get('end_id') || formData.get('start_id') === formData.get('end_id')) {
             resultsContainer.setAttribute('aria-busy', 'false');
             searchBtn.disabled = false;
