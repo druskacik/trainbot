@@ -29,6 +29,22 @@
         <p class="subtitle">Find the lowest fares for night trains in Europe</p>
     </header>
 
+    <div class="top-bar">
+        <nav class="site-nav" aria-label="Site">
+            <button class="nav-toggle" type="button" aria-expanded="false" aria-controls="nav-panel" aria-label="Site navigation">
+                <svg class="nav-icon" width="22" height="22" viewBox="0 0 22 22" fill="none" xmlns="http://www.w3.org/2000/svg" focusable="false" aria-hidden="true">
+                    <line x1="11" y1="3" x2="11" y2="20" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+                    <path d="M11 6h7l2 2-2 2H11z" fill="currentColor" opacity="0.85"/>
+                    <path d="M11 12H5l-2 2 2 2h6z" fill="currentColor" opacity="0.55"/>
+                </svg>
+            </button>
+            <div class="nav-panel" id="nav-panel" role="menu" hidden>
+                <a href="/about/" class="nav-link" role="menuitem" aria-current="page">About</a>
+                <a href="/coverage/" class="nav-link" role="menuitem">Coverage</a>
+            </div>
+        </nav>
+    </div>
+
     <main class="container about-container">
         <article class="about-post glass-panel">
             <h2>About TrainBot</h2>
@@ -52,6 +68,8 @@
             </a>
         </article>
     </main>
+    <script src="{% static 'ui/nav.js' %}"></script>
+
     <footer class="site-footer">
         <a href="/about/" class="footer-link" aria-current="page">About TrainBot</a>
         <span class="footer-sep" aria-hidden="true"> · </span>
