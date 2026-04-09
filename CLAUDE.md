@@ -60,7 +60,7 @@ docker compose up
 - **Round-trip search** pairs outbound routes with the best-priced return leg within `max_duration` days; European Sleeper round-trips get a combined booking URL.
 - **`CITY_CONNECTIONS`** in `cities.py` is a manually maintained dict (regenerate with `build_city_connections.py` after schema changes).
 
-## Design Principles (from CLAUDE-DESIGN.md)
+## Design Principles (from .impeccable.md)
 
 This project has explicit design guidance — follow it when touching CSS or templates:
 
@@ -69,7 +69,7 @@ This project has explicit design guidance — follow it when touching CSS or tem
 - **Accessibility defaults:** `focus-visible` on all interactive elements; 44px touch targets; ARIA attributes; no `alert()` dialogs.
 - **What to avoid:** Glassmorphism (`backdrop-filter`), gradient text on headings, cyan/indigo palette (reads as "AI-generated"), generic SaaS dashboard aesthetics, sustainability clichés.
 
-An accessibility/design audit is in `AUDIT-REPORT.md` — 22 documented issues including 2 critical (radio focus, missing `rel="noopener noreferrer"`). Consult it before making UI changes.
+Full design context (brand, aesthetic, principles) is in `.impeccable.md`. Consult it before making UI changes.
 
 ## Environment
 
