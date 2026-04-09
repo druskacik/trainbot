@@ -24,7 +24,7 @@ def _make_scrape_task(scraper_cls, name):
     """Create a Prefect task for a scraper. No task-level retries: these runs take
     hours and partial progress is already saved in batches; a failure near the end
     should not re-run the entire scrape."""
-    @task()
+    @task(name=name)
     def _task():
         logger.info(f"Starting {name} task...")
         result = scraper_cls().scrape()
@@ -33,7 +33,6 @@ def _make_scrape_task(scraper_cls, name):
         else:
             logger.info("No routes were found.")
         return result
-    _task.__name__ = name.lower().replace(' ', '_')
     return _task
 
 
