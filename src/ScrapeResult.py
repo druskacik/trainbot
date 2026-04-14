@@ -1,6 +1,16 @@
 from dataclasses import dataclass, field
 from typing import List
 
+# Telegram messages are limited to 4096 chars; Apprise prepends the title to the
+# body, so we leave ~190 chars of headroom for that.
+TELEGRAM_BODY_LIMIT = 3900
+
+
+def _cap_for_telegram(text: str) -> str:
+    if len(text) <= TELEGRAM_BODY_LIMIT:
+        return text
+    return text[:TELEGRAM_BODY_LIMIT] + "\n… (trimmed)"
+
 
 @dataclass
 class ScrapeFailure:
@@ -48,12 +58,13 @@ class ScrapeResult:
             f"({self.success_rate:.1f}% success rate). "
             f"{self.routes_scraped} routes scraped."
         ]
-        # Show up to 20 sample failures to avoid huge notifications
-        for f in self.failures[:20]:
-            lines.append(f"  • {f.date} train {f.train_number}: {f.error}")
-        if len(self.failures) < n_fail:
-            lines.append(f"  … and {n_fail - len(self.failures)} more (list capped).")
-        return "\n".join(lines)
+        # Show a small sample (capped to stay under Telegram's 4096 char limit)
+        for f in self.failures[:5]:
+            lines.append(f"  • {f.date} train {f.train_number}: {f.error[:80]}")
+        remaining = n_fail - min(len(self.failures), 5)
+        if remaining > 0:
+            lines.append(f"  … and {remaining} more.")
+        return _cap_for_telegram("\n".join(lines))
 
     def _scraper_line(self) -> str:
         """One-line per-scraper summary for combined reports."""
@@ -86,15 +97,16 @@ def combined_failure_summary(results: List["ScrapeResult"]) -> str:
     for r in results:
         lines.append(r._scraper_line())
 
-    # Show sample failures from all scrapers
+    # Show sample failures from all scrapers (capped to stay under Telegram's 4096 char limit)
     if total_fail:
         lines.append("")
         lines.append("Sample failures:")
         for r in results:
-            for f in r.failures[:10]:
+            for f in r.failures[:3]:
                 name = r.scraper_name or "Unknown"
-                lines.append(f"  • [{name}] {f.date} train {f.train_number}: {f.error}")
-            if len(r.failures) < r._failure_count:
-                lines.append(f"  … and {r._failure_count - len(r.failures)} more from {r.scraper_name}.")
+                lines.append(f"  • [{name}] {f.date} train {f.train_number}: {f.error[:80]}")
+            remaining = r._failure_count - min(len(r.failures), 3)
+            if remaining > 0:
+                lines.append(f"  … and {remaining} more from {r.scraper_name}.")
 
-    return "\n".join(lines)
+    return _cap_for_telegram("\n".join(lines))

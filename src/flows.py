@@ -17,7 +17,7 @@ sys.path.append(str(project_root))
 from src.EuropeanSleeperScraper import EuropeanSleeperScraper
 from src.NightjetScraper import NightjetScraper
 from src.RegioJetScraper import RegioJetScraper
-from src.ScrapeResult import combined_failure_summary
+from src.ScrapeResult import combined_failure_summary, _cap_for_telegram
 
 
 def _make_scrape_task(scraper_cls, name):
@@ -122,6 +122,7 @@ def daily_scraper_flow():
         body = combined_failure_summary(results)
         if errors:
             body += "\n\nCrashed scrapers:\n" + "\n".join(f"  • {e}" for e in errors)
+        body = _cap_for_telegram(body)
         if has_failures:
             apobj.notify(body=body, title="⚠️ Scraper Warning")
         else:
