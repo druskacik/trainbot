@@ -15,6 +15,7 @@ project_root = Path(__file__).resolve().parent.parent
 sys.path.append(str(project_root))
 
 from src.EuropeanSleeperScraper import EuropeanSleeperScraper
+from src.IntercityPlScraper import IntercityPlScraper
 from src.NightjetScraper import NightjetScraper
 from src.RegioJetScraper import RegioJetScraper
 from src.ScrapeResult import combined_failure_summary, _cap_for_telegram
@@ -39,6 +40,7 @@ def _make_scrape_task(scraper_cls, name):
 scrape_european_sleeper = _make_scrape_task(EuropeanSleeperScraper, "European Sleeper")
 scrape_nightjet = _make_scrape_task(NightjetScraper, "Nightjet")
 scrape_regiojet = _make_scrape_task(RegioJetScraper, "RegioJet")
+scrape_intercity_pl = _make_scrape_task(IntercityPlScraper, "Intercity.pl")
 
 
 def _run_flow_with_notifications(scrape_task, flow_name: str):
@@ -83,6 +85,7 @@ def _make_flow(scrape_task, name):
 european_sleeper_flow = _make_flow(scrape_european_sleeper, "European Sleeper Scraper")
 nightjet_flow = _make_flow(scrape_nightjet, "Nightjet Scraper")
 regiojet_flow = _make_flow(scrape_regiojet, "RegioJet Scraper")
+intercity_pl_flow = _make_flow(scrape_intercity_pl, "Intercity.pl Scraper")
 
 
 @flow(name="Daily Train Scraper")
@@ -97,6 +100,7 @@ def daily_scraper_flow():
     es_future = scrape_european_sleeper.submit()
     nj_future = scrape_nightjet.submit()
     rj_future = scrape_regiojet.submit()
+    ic_future = scrape_intercity_pl.submit()
 
     results = []
     errors = []
@@ -104,6 +108,7 @@ def daily_scraper_flow():
         ("European Sleeper", es_future),
         ("Nightjet", nj_future),
         ("RegioJet", rj_future),
+        ("Intercity.pl", ic_future),
     ]:
         try:
             results.append(future.result())
@@ -140,4 +145,5 @@ if __name__ == "__main__":
         european_sleeper_flow.to_deployment(name="european-sleeper"),
         nightjet_flow.to_deployment(name="nightjet"),
         regiojet_flow.to_deployment(name="regiojet"),
+        intercity_pl_flow.to_deployment(name="intercity-pl"),
     )

@@ -6,12 +6,19 @@ from pathlib import Path
 project_root = Path(__file__).resolve().parent.parent
 sys.path.append(str(project_root))
 
-from src.flows import daily_scraper_flow, european_sleeper_flow, nightjet_flow, regiojet_flow
+from src.flows import (
+    daily_scraper_flow,
+    european_sleeper_flow,
+    intercity_pl_flow,
+    nightjet_flow,
+    regiojet_flow,
+)
 
 FLOWS = {
     "european_sleeper": european_sleeper_flow,
     "nightjet": nightjet_flow,
     "regiojet": regiojet_flow,
+    "intercity_pl": intercity_pl_flow,
     "daily": daily_scraper_flow,
 }
 
