@@ -360,7 +360,16 @@ class IntercityPlScraper(RoutesScraper):
                     time.sleep(1)
                     continue
 
-                for connection in search_res.get("polaczenia") or []:
+                # PKP IC sometimes reports the same physical night train
+                # under two nrPociagu (e.g. Warsaw–Munich as 407 and 40407,
+                # Gdynia–Prague as 461 and 50461) — one per operator leg.
+                # Sort ascending so the lower, canonical PKP number is seen
+                # first and the duplicate is skipped by `seen_routes` below.
+                connections = sorted(
+                    search_res.get("polaczenia") or [],
+                    key=lambda c: (c.get("pociagi") or [{}])[0].get("nrPociagu") or 0,
+                )
+                for connection in connections:
                     pociagi = connection.get("pociagi") or []
                     if len(pociagi) != 1:
                         continue
@@ -404,9 +413,12 @@ class IntercityPlScraper(RoutesScraper):
                         )
                         continue
 
+                    # A "route" is a timetable slot (two cities + a precise
+                    # departure moment), not a train_number. See the note
+                    # above the connections sort for why train_number is
+                    # deliberately excluded from this key.
                     route_id = (
-                        f"{SOURCE}|{train_number}|{dep_city}|{arr_city}|"
-                        f"{dep_time.isoformat()}"
+                        f"{SOURCE}|{dep_city}|{arr_city}|{dep_time.isoformat()}"
                     )
                     if route_id in seen_routes:
                         continue
