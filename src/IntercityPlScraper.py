@@ -42,27 +42,34 @@ HEADERS = {
     ),
 }
 
-# Routes copied from 500_scrape_intercity_pl.ipynb (cell ba895f70).
+# Unordered corridors — each is expanded into two ROUTES entries below so the
+# scraper queries both directions.
+_CORRIDORS: List[Tuple[int, int]] = [
+    (5196003, 5596001),  # Warsaw ↔ Budapest
+    (5196003, 5100059),  # Warsaw ↔ Świnoujście
+    (5196003, 5100058),  # Warsaw ↔ Szklarska Poręba
+    (5196003, 5100259),  # Warsaw ↔ Jelenia Góra
+    (5196003, 7800013),  # Warsaw ↔ Rijeka
+    (5196003, 8000261),  # Warsaw ↔ Munich
+    (5100158, 5196004),  # Zakopane ↔ Szczecin
+    (5100158, 5100059),  # Zakopane ↔ Świnoujście
+    (5196001, 5100059),  # Cracow ↔ Świnoujście
+    (5196001, 5101340),  # Cracow ↔ Hel
+    (5196030, 5100025),  # Lublin ↔ Kołobrzeg
+    (5196032, 5100010),  # Przemyśl ↔ Gdynia
+    (5196032, 5101340),  # Przemyśl ↔ Hel
+    (5100059, 5196032),  # Świnoujście ↔ Przemyśl
+    (5100010, 5100158),  # Gdynia ↔ Zakopane
+    (5100010, 5496001),  # Gdynia ↔ Prague
+    (5101340, 5400038),  # Hel ↔ Bohumín
+    (5100025, 5100316),  # Kołobrzeg ↔ Bielsko-Biała
+    (5196001, 5100025),  # Cracow ↔ Kołobrzeg
+]
+
 ROUTES: List[Dict[str, int]] = [
-    {"from_eva": 5196003, "to_eva": 5596001},  # Warsaw – Budapest
-    {"from_eva": 5196003, "to_eva": 5100059},  # Warsaw – Świnoujście
-    {"from_eva": 5196003, "to_eva": 5100058},  # Warsaw – Szklarska Poręba
-    {"from_eva": 5196003, "to_eva": 5100259},  # Warsaw – Jelenia Góra
-    {"from_eva": 5196003, "to_eva": 7800013},  # Warsaw – Rijeka
-    {"from_eva": 5196003, "to_eva": 8000261},  # Warsaw – Munich
-    {"from_eva": 5100158, "to_eva": 5196004},  # Zakopane – Szczecin
-    {"from_eva": 5100158, "to_eva": 5100059},  # Zakopane – Świnoujście
-    {"from_eva": 5196001, "to_eva": 5100059},  # Cracow – Świnoujście
-    {"from_eva": 5196001, "to_eva": 5101340},  # Cracow – Hel
-    {"from_eva": 5196030, "to_eva": 5100025},  # Lublin – Kołobrzeg
-    {"from_eva": 5196032, "to_eva": 5100010},  # Przemyśl – Gdynia
-    {"from_eva": 5196032, "to_eva": 5101340},  # Przemyśl – Hel
-    {"from_eva": 5100059, "to_eva": 5196032},  # Świnoujście – Przemyśl
-    {"from_eva": 5100010, "to_eva": 5100158},  # Gdynia – Zakopane
-    {"from_eva": 5100010, "to_eva": 5496001},  # Gdynia – Prague
-    {"from_eva": 5101340, "to_eva": 5400038},  # Hel – Bohumín
-    {"from_eva": 5100025, "to_eva": 5100316},  # Kołobrzeg – Bielsko-Biała
-    {"from_eva": 5196001, "to_eva": 5100025},  # Cracow – Kołobrzeg
+    {"from_eva": a, "to_eva": b}
+    for pair in _CORRIDORS
+    for a, b in (pair, pair[::-1])
 ]
 
 # EVA → display metadata. Used to pick the English station name we persist.
