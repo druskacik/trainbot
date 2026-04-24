@@ -612,6 +612,7 @@ fieldset {
     font-family: inherit;
     letter-spacing: 0.02em;
     cursor: pointer;
+    text-decoration: none;
     transition: background-color 0.2s var(--ease-out-quart), box-shadow 0.2s var(--ease-out-quart), transform 0.15s var(--ease-out-quart);
     box-shadow: var(--shadow-subtle);
     display: flex;
@@ -1329,4 +1330,84 @@ fieldset {
 .footer-sep {
     color: var(--text-muted);
     margin: 0 var(--space-xs);
+}
+
+/* ========== Modal ========== */
+.modal {
+    margin: auto;
+    padding: 0;
+    border: none;
+    border-radius: var(--radius-xl);
+    background: transparent;
+    max-width: 90vw;
+    width: 400px;
+    overflow: hidden;
+}
+
+.modal::backdrop {
+    background: var(--backdrop-overlay);
+    backdrop-filter: blur(4px);
+    animation: fadeIn 0.3s ease-out;
+}
+
+.modal-content {
+    background: var(--panel-bg);
+    border: 1px solid var(--panel-border);
+    border-radius: var(--radius-xl);
+    padding: var(--space-3xl);
+    box-shadow: var(--shadow-panel);
+    position: relative;
+    color: var(--text-main);
+}
+
+.close-btn {
+    position: absolute;
+    top: var(--space-xl);
+    right: var(--space-xl);
+    background: transparent;
+    border: none;
+    color: var(--text-muted);
+    cursor: pointer;
+    padding: var(--space-xs);
+    border-radius: var(--radius-sm);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: color var(--transition-base), background-color var(--transition-base);
+}
+
+.close-btn:hover {
+    color: var(--text-main);
+    background-color: var(--input-bg);
+}
+
+.close-btn:focus-visible {
+    outline: none;
+    box-shadow: var(--focus-ring);
+}
+
+.modal-content h2 {
+    font-family: var(--font-display);
+    font-size: 1.5rem;
+    font-weight: 700;
+    margin-bottom: var(--space-md);
+    padding-right: var(--space-2xl); /* Make room for close button */
+}
+
+.modal-content p {
+    color: var(--text-muted);
+    font-size: 0.9375rem;
+    margin-bottom: var(--space-2xl);
+    line-height: 1.5;
+}
+
+.modal-actions {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-md);
+}
+
+/* Optional: animation for modal open */
+.modal[open] .modal-content {
+    animation: fadeInUp 0.4s var(--ease-out-quart) both;
 }

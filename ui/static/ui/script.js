@@ -15,6 +15,30 @@ document.addEventListener('DOMContentLoaded', () => {
     const noResultsState = document.getElementById('no-results-state');
     const formError = document.getElementById('form-error');
 
+    const bookingModal = document.getElementById('booking-modal');
+    const closeModalBtn = document.getElementById('close-modal-btn');
+    const modalOutboundLink = document.getElementById('modal-outbound-link');
+    const modalReturnLink = document.getElementById('modal-return-link');
+
+    if (bookingModal) {
+        closeModalBtn.addEventListener('click', () => {
+            bookingModal.close();
+        });
+
+        bookingModal.addEventListener('click', (event) => {
+            if (event.target === bookingModal) {
+                bookingModal.close();
+            }
+        });
+    }
+
+    function showBookingModal(outboundUrl, returnUrl) {
+        if (!bookingModal) return;
+        modalOutboundLink.href = outboundUrl;
+        modalReturnLink.href = returnUrl;
+        bookingModal.showModal();
+    }
+
     let allCities = [];
     let cityConnections = {};
 
@@ -329,24 +353,7 @@ document.addEventListener('DOMContentLoaded', () => {
             .replace(/'/g, '&#39;');
     }
 
-    function buildSecondaryBookingActionMarkup(trip, isReturn) {
-        if (!isReturn || !trip.secondary_booking_url) {
-            return '';
-        }
 
-        const providerName = trip.return_provider_name || 'return leg';
-        return `
-            <a
-                class="booking-action"
-                href="${escapeHtml(trip.secondary_booking_url)}"
-                target="_blank"
-                rel="noopener noreferrer"
-                aria-label="${escapeHtml(`Book return leg on ${providerName}`)}"
-            >
-                Book return
-            </a>
-        `;
-    }
 
     function getTripAriaLabel(trip) {
         const outboundDetails = trip.outbound_leg?.booking_details || {};
@@ -369,20 +376,27 @@ document.addEventListener('DOMContentLoaded', () => {
             card = document.createElement('article');
             if (primaryBookingUrl) {
                 card.tabIndex = 0;
-                card.setAttribute('role', 'link');
-                card.addEventListener('click', (event) => {
-                    if (event.target.closest('.booking-action')) {
+                card.setAttribute('role', 'button');
+                
+                const openBooking = (event) => {
+                    // Prevent opening if clicking on other interactive elements
+                    if (event.target.closest('button') && !event.target.closest('.open-booking-modal')) {
                         return;
                     }
-                    window.open(primaryBookingUrl, '_blank', 'noopener,noreferrer');
+                    if (hasSecondaryBookingUrl) {
+                        showBookingModal(primaryBookingUrl, trip.secondary_booking_url);
+                    } else {
+                        window.open(primaryBookingUrl, '_blank', 'noopener,noreferrer');
+                    }
+                };
+
+                card.addEventListener('click', (event) => {
+                    openBooking(event);
                 });
                 card.addEventListener('keydown', (event) => {
-                    if (event.target.closest('.booking-action')) {
-                        return;
-                    }
                     if (event.key === 'Enter' || event.key === ' ') {
                         event.preventDefault();
-                        window.open(primaryBookingUrl, '_blank', 'noopener,noreferrer');
+                        openBooking(event);
                     }
                 });
             }
@@ -571,17 +585,11 @@ document.addEventListener('DOMContentLoaded', () => {
                     <div class="provider-summary">${buildProviderSummaryMarkup(trip, isReturn)}</div>
                     ${isReturn && trip.return_date ? `<div class="trip-duration">${trip.duration_days} ${trip.duration_days === 1 ? 'day' : 'days'}</div>` : ''}
                     ${buildTripNotesMarkup(trip)}
-                    ${buildSecondaryBookingActionMarkup(trip, isReturn)}
                 </div>
             `;
 
             card.innerHTML = content;
 
-            card.querySelectorAll('.booking-action').forEach((action) => {
-                action.addEventListener('click', (event) => {
-                    event.stopPropagation();
-                });
-            });
             resultsContainer.appendChild(card);
         });
     };
