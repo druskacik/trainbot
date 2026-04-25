@@ -56,6 +56,7 @@ _CORRIDORS: List[Tuple[int, int]] = [
     (5196003, 8000261),  # Warsaw ↔ Munich
     (5100158, 5196004),  # Zakopane ↔ Szczecin
     (5100158, 5100059),  # Zakopane ↔ Świnoujście
+    (5196001, 5596001),  # Cracow ↔ Budapest
     (5196001, 5100059),  # Cracow ↔ Świnoujście
     (5196001, 5101340),  # Cracow ↔ Hel
     (5196030, 5100025),  # Lublin ↔ Kołobrzeg
