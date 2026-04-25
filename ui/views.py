@@ -1,3 +1,4 @@
+from collections import Counter, defaultdict
 from django.db.models import Min, OuterRef, Subquery
 from django.http import JsonResponse
 from django.shortcuts import render
@@ -9,6 +10,8 @@ from .cities import (
     CITY_CONNECTIONS,
     EUROPEAN_SLEEPER,
     EUROPEAN_SLEEPER_BOOKING_URL,
+    INTERCITY_PL,
+    INTERCITY_PL_BOOKING_URL,
     NIGHTJET,
     NIGHTJET_BOOKING_URL,
     PROVIDER_ROUTES,
@@ -89,25 +92,206 @@ def about(request):
     return render(request, 'ui/about.html')
 
 
+def _reconstruct_station_chain(route_rows):
+    """Reconstruct one station sequence from pairwise segment rows."""
+    if not route_rows:
+        return []
+
+    dep_times = {}
+    dep_stations = set()
+    arr_stations = set()
+    arr_only_times = {}
+
+    for row in route_rows:
+        dep_station = row["departure_station"]
+        arr_station = row["arrival_station"]
+        dep_time = row["departure_time"]
+        arr_time = row["arrival_time"]
+
+        dep_stations.add(dep_station)
+        arr_stations.add(arr_station)
+
+        existing = dep_times.get(dep_station)
+        if existing is None or dep_time < existing:
+            dep_times[dep_station] = dep_time
+
+        if arr_station not in dep_stations:
+            current_arr_time = arr_only_times.get(arr_station)
+            if current_arr_time is None or arr_time < current_arr_time:
+                arr_only_times[arr_station] = arr_time
+
+    station_times = dict(dep_times)
+    for station, arr_time in arr_only_times.items():
+        if station not in station_times:
+            station_times[station] = arr_time
+
+    chain = [station for station, _ in sorted(station_times.items(), key=lambda kv: (kv[1], kv[0]))]
+
+    return chain if len(chain) >= 2 else []
+
+
+def _split_service_rows_by_time_overlap(service_rows):
+    """Split one train/day rows into time-consistent clusters."""
+    clusters = []
+    for row in sorted(service_rows, key=lambda x: (x["departure_time"], x["arrival_time"])):
+        matched = None
+        for cluster in clusters:
+            if not (
+                row["arrival_time"] < cluster["start"]
+                or row["departure_time"] > cluster["end"]
+            ):
+                matched = cluster
+                break
+
+        if matched is None:
+            clusters.append({
+                "start": row["departure_time"],
+                "end": row["arrival_time"],
+                "rows": [row],
+            })
+            continue
+
+        matched["rows"].append(row)
+        if row["departure_time"] < matched["start"]:
+            matched["start"] = row["departure_time"]
+        if row["arrival_time"] > matched["end"]:
+            matched["end"] = row["arrival_time"]
+
+    return [cluster["rows"] for cluster in clusters]
+
+
+def _canonical_chain_key(stops):
+    chain = tuple(stops)
+    return min(chain, tuple(reversed(chain)))
+
+
+def _is_contiguous_subsequence(short_chain, long_chain):
+    n = len(short_chain)
+    if n > len(long_chain):
+        return False
+    for i in range(len(long_chain) - n + 1):
+        if tuple(long_chain[i : i + n]) == tuple(short_chain):
+            return True
+    return False
+
+
+def _filter_to_maximal_chains(canonical_chains):
+    kept = []
+    for candidate in sorted(canonical_chains, key=len, reverse=True):
+        candidate_rev = tuple(reversed(candidate))
+        is_subset = False
+        for existing in kept:
+            existing_rev = tuple(reversed(existing))
+            if (
+                _is_contiguous_subsequence(candidate, existing)
+                or _is_contiguous_subsequence(candidate_rev, existing)
+                or _is_contiguous_subsequence(candidate, existing_rev)
+                or _is_contiguous_subsequence(candidate_rev, existing_rev)
+            ):
+                is_subset = True
+                break
+        if not is_subset:
+            kept.append(candidate)
+    return kept
+
+
+def _build_intercity_coverage_routes():
+    """Build Intercity.pl coverage routes from DB rows with dedup/noise filtering."""
+    min_support_days = 3
+    now = timezone.now()
+    rows = list(
+        Route.objects.filter(source=INTERCITY_PL, departure_time__gte=now)
+        .values(
+            "train_number",
+            "travel_date",
+            "departure_station",
+            "arrival_station",
+            "departure_time",
+            "arrival_time",
+        )
+        .order_by("travel_date", "departure_time")
+    )
+
+    if not rows:
+        return None
+
+    rows_by_service = defaultdict(list)
+    for row in rows:
+        service_key = (row["train_number"], row["travel_date"])
+        rows_by_service[service_key].append(row)
+
+    merged_routes = defaultdict(lambda: {
+        "distinct_days": set(),
+        "train_numbers": set(),
+        "oriented_counts": Counter(),
+    })
+
+    for (train_number, travel_date), service_rows in rows_by_service.items():
+        for cluster_rows in _split_service_rows_by_time_overlap(service_rows):
+            chain = _reconstruct_station_chain(cluster_rows)
+            if len(chain) < 2:
+                continue
+            canonical_key = _canonical_chain_key(chain)
+            entry = merged_routes[canonical_key]
+            entry["distinct_days"].add(travel_date)
+            entry["train_numbers"].add(str(train_number))
+            entry["oriented_counts"][tuple(chain)] += 1
+
+    supported_chains = [
+        chain_key
+        for chain_key, data in merged_routes.items()
+        if len(data["distinct_days"]) >= min_support_days
+    ]
+    maximal_chains = _filter_to_maximal_chains(supported_chains)
+
+    routes = []
+    for canonical_key in maximal_chains:
+        data = merged_routes[canonical_key]
+        stops = list(sorted(data["oriented_counts"].items(), key=lambda kv: (-kv[1], kv[0]))[0][0])
+        trains = " / ".join(sorted(data["train_numbers"], key=lambda t: (len(t), t)))
+        routes.append(
+            {
+                "name": f"{stops[0]} — {stops[-1]}",
+                "trains": trains or "—",
+                "stops": stops,
+                "endpoints": f"{stops[0]} — {stops[-1]}",
+            }
+        )
+
+    routes.sort(key=lambda route: (route["endpoints"], route["trains"]))
+    return routes or None
+
+
 def coverage(request):
     providers = [
         {"id": EUROPEAN_SLEEPER, "name": "European Sleeper", "url": EUROPEAN_SLEEPER_BOOKING_URL},
         {"id": NIGHTJET,         "name": "Nightjet",         "url": NIGHTJET_BOOKING_URL},
         {"id": REGIOJET,         "name": "RegioJet",         "url": REGIOJET_BOOKING_URL},
+        {"id": INTERCITY_PL,     "name": "Intercity.pl",     "url": INTERCITY_PL_BOOKING_URL},
     ]
     for p in providers:
-        raw_routes = PROVIDER_ROUTES.get(p["id"], [])
         routes = []
         all_cities = set()
-        for r in raw_routes:
-            resolved = [CITY_CATALOG[cid]["name"] for cid in r["stops"]]
-            routes.append({
-                "name": r["name"],
-                "trains": r["trains"],
-                "stops": resolved,
-                "endpoints": f"{resolved[0]} — {resolved[-1]}",
-            })
-            all_cities.update(r["stops"])
+
+        if p["id"] == INTERCITY_PL:
+            intercity_routes = _build_intercity_coverage_routes()
+            if intercity_routes is not None:
+                routes = intercity_routes
+                for route in routes:
+                    all_cities.update(route["stops"])
+
+        if not routes:
+            raw_routes = PROVIDER_ROUTES.get(p["id"], [])
+            for r in raw_routes:
+                resolved = [CITY_CATALOG[cid]["name"] for cid in r["stops"]]
+                routes.append({
+                    "name": r["name"],
+                    "trains": r["trains"],
+                    "stops": resolved,
+                    "endpoints": f"{resolved[0]} — {resolved[-1]}",
+                })
+                all_cities.update(r["stops"])
+
         p["routes"] = routes
         p["city_count"] = len(all_cities)
     return render(request, "ui/coverage.html", {"providers": providers})
@@ -206,14 +390,15 @@ def search_trips(request):
                     return_leg = _serialize_route_leg(best_return, end_id, start_id)
                     combined_booking_url = None
                     if (
-                        outbound_leg['provider'] == EUROPEAN_SLEEPER
-                        and return_leg['provider'] == EUROPEAN_SLEEPER
+                        outbound_leg['provider'] == return_leg['provider']
+                        and outbound_leg['provider'] in (EUROPEAN_SLEEPER, INTERCITY_PL)
                     ):
                         combined_booking_url = build_booking_url(
-                            EUROPEAN_SLEEPER,
+                            outbound_leg['provider'],
                             start_id,
                             end_id,
                             out_route.travel_date,
+                            departure_time=out_route.departure_time,
                             return_date=best_return.travel_date,
                         )
 
@@ -243,4 +428,3 @@ def search_trips(request):
 
     except Exception as e:
         return JsonResponse({'status': 'error', 'message': str(e)}, status=400)
-

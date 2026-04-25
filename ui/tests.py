@@ -9,7 +9,15 @@ from django.utils import timezone
 
 from .cities import NIGHTJET_BOOKING_URL, build_booking_url, get_station_names
 from .models import CurrentAvailability, Route
-from .views import _get_routes_with_best_price, get_stations, search_trips
+from .views import (
+    _canonical_chain_key,
+    _filter_to_maximal_chains,
+    _get_routes_with_best_price,
+    _reconstruct_station_chain,
+    _split_service_rows_by_time_overlap,
+    get_stations,
+    search_trips,
+)
 
 
 def _tables_exist():
@@ -271,6 +279,7 @@ class SearchTripsViewTest(SimpleTestCase):
         self.assertIn("outwardDateTime=2026-03-25T22%3A10", result["return_booking_url"])
         self.assertEqual(result["outbound_leg"]["booking_mode"], "direct")
         self.assertEqual(result["return_leg"]["booking_mode"], "direct")
+
         self.assertEqual(result["return_leg"]["booking_details"]["from_city"], "Vienna")
         self.assertEqual(result["return_leg"]["booking_details"]["to_city"], "Prague")
         self.assertEqual(result["primary_booking_url"], result["outbound_booking_url"])
@@ -320,3 +329,100 @@ class SearchTripsViewTest(SimpleTestCase):
         self.assertIsNone(result["secondary_booking_url"])
         self.assertEqual(result["outbound_leg"]["booking_mode"], "direct")
         self.assertEqual(result["return_leg"]["booking_mode"], "direct")
+
+
+class IntercityCoverageHelpersTest(SimpleTestCase):
+    def test_reconstruct_station_chain_includes_intermediate_stations(self):
+        rows = [
+            {
+                "departure_station": "Warsaw",
+                "arrival_station": "Vienna",
+                "departure_time": datetime(2026, 4, 27, 19, 30),
+                "arrival_time": datetime(2026, 4, 28, 5, 40),
+            },
+            {
+                "departure_station": "Warsaw",
+                "arrival_station": "Budapest",
+                "departure_time": datetime(2026, 4, 27, 19, 30),
+                "arrival_time": datetime(2026, 4, 28, 8, 35),
+            },
+            {
+                "departure_station": "Vienna",
+                "arrival_station": "Budapest",
+                "departure_time": datetime(2026, 4, 28, 5, 35),
+                "arrival_time": datetime(2026, 4, 28, 8, 35),
+            },
+        ]
+
+        self.assertEqual(
+            _reconstruct_station_chain(rows),
+            ["Warsaw", "Vienna", "Budapest"],
+        )
+
+    def test_reconstruct_station_chain_handles_empty_input(self):
+        self.assertEqual(_reconstruct_station_chain([]), [])
+
+    def test_reconstruct_station_chain_orders_by_station_time(self):
+        rows = [
+            {
+                "departure_station": "Warsaw",
+                "arrival_station": "Budapest",
+                "departure_time": datetime(2026, 4, 27, 19, 30),
+                "arrival_time": datetime(2026, 4, 28, 8, 35),
+            },
+            {
+                "departure_station": "Warsaw",
+                "arrival_station": "Vienna",
+                "departure_time": datetime(2026, 4, 27, 19, 30),
+                "arrival_time": datetime(2026, 4, 28, 5, 40),
+            },
+            {
+                "departure_station": "Vienna",
+                "arrival_station": "Budapest",
+                "departure_time": datetime(2026, 4, 28, 5, 35),
+                "arrival_time": datetime(2026, 4, 28, 8, 35),
+            },
+        ]
+        self.assertEqual(_reconstruct_station_chain(rows), ["Warsaw", "Vienna", "Budapest"])
+
+    def test_split_service_rows_by_time_overlap_creates_separate_clusters(self):
+        rows = [
+            {
+                "departure_station": "Warsaw",
+                "arrival_station": "Vienna",
+                "departure_time": datetime(2026, 4, 27, 19, 30),
+                "arrival_time": datetime(2026, 4, 28, 5, 40),
+            },
+            {
+                "departure_station": "Vienna",
+                "arrival_station": "Budapest",
+                "departure_time": datetime(2026, 4, 28, 5, 35),
+                "arrival_time": datetime(2026, 4, 28, 8, 35),
+            },
+            {
+                "departure_station": "Budapest",
+                "arrival_station": "Vienna",
+                "departure_time": datetime(2026, 4, 28, 19, 30),
+                "arrival_time": datetime(2026, 4, 29, 5, 35),
+            },
+        ]
+        clusters = _split_service_rows_by_time_overlap(rows)
+        self.assertEqual(len(clusters), 2)
+        self.assertEqual(len(clusters[0]), 2)
+        self.assertEqual(len(clusters[1]), 1)
+
+    def test_canonical_chain_key_collapses_reverse_duplicates(self):
+        a = _canonical_chain_key(["Hel", "Gdynia", "Gdansk", "Bydgoszcz", "Bohumin"])
+        b = _canonical_chain_key(["Bohumin", "Bydgoszcz", "Gdansk", "Gdynia", "Hel"])
+        self.assertEqual(a, b)
+
+    def test_filter_to_maximal_chains_removes_subsets(self):
+        chains = [
+            ("Bohumin", "Katowice", "Bydgoszcz"),
+            ("Bohumin", "Katowice", "Bydgoszcz", "Gdynia", "Hel"),
+            ("Cracow", "Warsaw", "Gdynia"),
+        ]
+        filtered = _filter_to_maximal_chains(chains)
+        self.assertIn(("Bohumin", "Katowice", "Bydgoszcz", "Gdynia", "Hel"), filtered)
+        self.assertNotIn(("Bohumin", "Katowice", "Bydgoszcz"), filtered)
+        self.assertIn(("Cracow", "Warsaw", "Gdynia"), filtered)
