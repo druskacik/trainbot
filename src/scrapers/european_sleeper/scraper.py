@@ -6,9 +6,9 @@ from typing import List
 
 logger = logging.getLogger(__name__)
 
-from .RoutesScraper import RoutesScraper
-from .models import Route, Price
-from .ScrapeResult import ScrapeResult, ScrapeFailure
+from ...RoutesScraper import RoutesScraper
+from ...models import Route, Price
+from ...ScrapeResult import ScrapeResult, ScrapeFailure
 
 # Cap in-memory failures for long runs to avoid unbounded memory growth
 MAX_FAILURES_STORED = 2000

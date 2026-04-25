@@ -15,10 +15,10 @@ logger = logging.getLogger(__name__)
 project_root = Path(__file__).resolve().parent.parent
 sys.path.append(str(project_root))
 
-from src.EuropeanSleeperScraper import EuropeanSleeperScraper
-from src.IntercityPlScraper import IntercityPlScraper
-from src.NightjetScraper import NightjetScraper
-from src.RegioJetScraper import RegioJetScraper
+from src.scrapers.european_sleeper import EuropeanSleeperScraper
+from src.scrapers.intercity_pl import IntercityPlScraper
+from src.scrapers.nightjet import NightjetScraper
+from src.scrapers.regiojet import RegioJetScraper
 from src.ScrapeResult import combined_failure_summary, _cap_for_telegram
 
 

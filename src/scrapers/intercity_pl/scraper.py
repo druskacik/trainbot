@@ -9,10 +9,10 @@ import curl_cffi
 
 logger = logging.getLogger(__name__)
 
-from .intercity_pl_cities import build_station_eva_to_city
-from .RoutesScraper import RoutesScraper
-from .models import Price, Route
-from .ScrapeResult import ScrapeFailure, ScrapeResult
+from .cities import build_station_eva_to_city
+from ...RoutesScraper import RoutesScraper
+from ...models import Price, Route
+from ...ScrapeResult import ScrapeFailure, ScrapeResult
 
 MAX_FAILURES_STORED = 2000
 

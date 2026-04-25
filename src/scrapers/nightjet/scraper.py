@@ -8,10 +8,10 @@ import requests
 
 logger = logging.getLogger(__name__)
 
-from .RoutesScraper import RoutesScraper
-from .models import Route, Price
-from .ScrapeResult import ScrapeResult, ScrapeFailure
-from .captcha import solve_challenge
+from ...RoutesScraper import RoutesScraper
+from ...models import Route, Price
+from ...ScrapeResult import ScrapeResult, ScrapeFailure
+from ...captcha import solve_challenge
 
 # Cap in-memory failures for long runs to avoid unbounded memory growth
 MAX_FAILURES_STORED = 2000

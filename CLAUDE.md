@@ -43,8 +43,8 @@ docker compose up
 
 ### Scraping Layer (`src/`)
 - `RoutesScraper.py` — Abstract base; manages SQLAlchemy sessions and batch saves (50 routes/flush)
-- `EuropeanSleeperScraper.py` — Scrapes 4 hardcoded train configs; station IDs are provider-specific integers
-- `NightjetScraper.py` — Discovers stations dynamically via API; separate seat/couchette pricing
+- `scrapers/european_sleeper/scraper.py` — Scrapes 4 hardcoded train configs; station IDs are provider-specific integers
+- `scrapers/nightjet/scraper.py` — Discovers stations dynamically via API; separate seat/couchette pricing
 - `flows.py` — Prefect orchestration; daily cron at 2 AM; Telegram notifications via Apprise
 - `models.py` — SQLAlchemy ORM: `Route`, `Price` (historical), `CurrentAvailability` (latest per route+seat type)
 
