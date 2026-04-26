@@ -313,12 +313,21 @@ document.addEventListener('DOMContentLoaded', () => {
         return `${amount.toFixed(2)} ${currencySymbol}`.trim();
     }
 
-    function buildLegMarkup(label, date, price, currency) {
+    function buildLegMarkup(label, leg) {
+        const offsetBadge = leg.day_offset > 0
+            ? `<span class="leg-day-offset" aria-label="arrives ${leg.day_offset} day${leg.day_offset > 1 ? 's' : ''} later">+${leg.day_offset}</span>`
+            : '';
         return `
             <div class="journey-leg">
                 <div class="leg-label">${label}</div>
-                <div class="leg-date">${formatDate(date)}</div>
-                <div class="leg-price">${formatPrice(price, currency)}</div>
+                <div class="leg-date">${formatDate(leg.date)}</div>
+                <div class="leg-times">
+                    <span class="leg-time">${leg.departure_time_str}</span>
+                    <span class="leg-time-arrow" aria-hidden="true">→</span>
+                    <span class="leg-time">${leg.arrival_time_str}</span>
+                    ${offsetBadge}
+                </div>
+                <div class="leg-price">${formatPrice(leg.price, leg.currency)}</div>
             </div>
         `;
     }
@@ -359,7 +368,9 @@ document.addEventListener('DOMContentLoaded', () => {
         const outboundDetails = trip.outbound_leg?.booking_details || {};
         const from = (outboundDetails.from_city || '').trim() || 'Departure';
         const to = (outboundDetails.to_city || '').trim() || 'Destination';
-        return `View trip ${from} to ${to}, ${formatPrice(trip.total_price, trip.currency)}`;
+        const departureTime = trip.outbound_leg?.departure_time_str;
+        const departing = departureTime ? ` departing ${departureTime}` : '';
+        return `View trip ${from} to ${to}${departing}, ${formatPrice(trip.total_price, trip.currency)}`;
     }
 
     function createResultCard(trip) {
@@ -561,23 +572,11 @@ document.addEventListener('DOMContentLoaded', () => {
 
             let content = `
                 <div class="price-tag">${trip.total_price.toFixed(2)} <span class="currency">${currencySymbol}</span></div>
-                ${buildLegMarkup(
-                    'Outbound',
-                    trip.outbound_date,
-                    trip.outbound_price,
-                    trip.currency
-                )}
+                ${buildLegMarkup('Outbound', trip.outbound_leg)}
             `;
 
-            if (isReturn && trip.return_date) {
-                content += `
-                    ${buildLegMarkup(
-                        'Return',
-                        trip.return_date,
-                        trip.return_price,
-                        trip.currency
-                    )}
-                `;
+            if (isReturn && trip.return_leg) {
+                content += buildLegMarkup('Return', trip.return_leg);
             }
 
             content += `

@@ -321,6 +321,10 @@ def _serialize_route_leg(route, start_id, end_id):
 
     return {
         'date': route.travel_date.isoformat(),
+        'departure_time_str': route.departure_time.strftime('%H:%M'),
+        'arrival_time_str': route.arrival_time.strftime('%H:%M'),
+        'arrival_date': route.arrival_time.date().isoformat(),
+        'day_offset': (route.arrival_time.date() - route.departure_time.date()).days,
         'price': route.latest_price,
         'currency': route.latest_currency,
         'provider': route.source,

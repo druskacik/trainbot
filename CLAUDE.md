@@ -1,10 +1,6 @@
-# CLAUDE.md
-
-This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
-
 ## Project Overview
 
-TrainBot is a train fare aggregator for European sleeper/couchette trains. It scrapes pricing from European Sleeper and Nightjet (ÖBB) APIs, stores results in PostgreSQL, and serves a search UI via Django.
+TrainBot is a train fare aggregator for European sleeper/couchette trains. It scrapes pricing from multiple train providers' APIs, stores results in PostgreSQL, and serves a search UI via Django.
 
 ## Commands
 
@@ -20,21 +16,11 @@ uv run python -c "from src.flows import scrape_european_sleeper; scrape_european
 uv run python -c "from src.flows import scrape_nightjet; scrape_nightjet()"
 uv run python -c "from src.flows import daily_scraper_flow; daily_scraper_flow()"
 
-# Database migrations (Alembic, not Django migrations)
-uv run alembic upgrade head
-uv run alembic revision --autogenerate -m "description"
-
 # Query the database (read-only)
 uv run agent_utils/search_db.py --query "SELECT ..." --format csv
 
 # Rebuild CITY_CONNECTIONS from routes table
 uv run agent_utils/build_city_connections.py
-
-# Django management
-uv run python manage.py createsuperuser
-
-# Docker
-docker compose up
 ```
 
 ## Architecture
