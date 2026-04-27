@@ -92,20 +92,33 @@
                 </fieldset>
 
                 <div class="form-group return-params" id="return-params-group">
-                    <label for="max-duration">Max Trip Duration (Days)</label>
-                    <input type="number" id="max-duration" name="max_duration" value="14" min="1" max="90"
-                        class="num-input">
-                    <div class="helper-text">Find the lowest return prices within this timeframe</div>
+                    <div class="duration-slider__header">
+                        <label id="duration-label">Trip Duration</label>
+                        <output class="duration-slider__readout" id="duration-readout" for="min-duration max-duration" aria-live="polite">2 – 5 days</output>
+                    </div>
+                    <div class="duration-slider" data-min="1" data-max="14">
+                        <div class="duration-slider__track" aria-hidden="true">
+                            <div class="duration-slider__fill" id="duration-fill"></div>
+                        </div>
+                        <input type="range" id="min-duration" name="min_duration" min="1" max="14" value="2"
+                            class="duration-slider__input" aria-labelledby="duration-label" aria-label="Minimum days">
+                        <input type="range" id="max-duration" name="max_duration" min="1" max="14" value="5"
+                            class="duration-slider__input" aria-labelledby="duration-label" aria-label="Maximum days">
+                    </div>
+                    <div class="duration-slider__scale" aria-hidden="true">
+                        <span>1</span>
+                        <span>14 days</span>
+                    </div>
                 </div>
 
                 <fieldset class="form-group" aria-labelledby="seat-type-legend">
                     <legend id="seat-type-legend" class="fieldset-legend">Seat Type</legend>
                     <div class="radio-group">
-                        <input type="radio" id="seat-any" name="seat_type" value="any" checked>
-                        <label for="seat-any" class="radio-label">Any (Cheapest)</label>
-
-                        <input type="radio" id="seat-couchette" name="seat_type" value="couchette">
+                        <input type="radio" id="seat-couchette" name="seat_type" value="couchette" checked>
                         <label for="seat-couchette" class="radio-label">Sleeping</label>
+
+                        <input type="radio" id="seat-any" name="seat_type" value="any">
+                        <label for="seat-any" class="radio-label">Any (Cheapest)</label>
                     </div>
                 </fieldset>
 

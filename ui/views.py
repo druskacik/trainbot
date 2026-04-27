@@ -1,4 +1,6 @@
 from collections import Counter, defaultdict
+from datetime import timedelta
+
 from django.db.models import Min, OuterRef, Subquery
 from django.http import JsonResponse
 from django.shortcuts import render
@@ -339,14 +341,40 @@ def _serialize_route_leg(route, start_id, end_id):
     }
 
 
+def _pto_days_needed(out_departure_dt, return_arrival_dt, work_start_hour=10, work_end_hour=17):
+    """Estimate Mon-Fri vacation days needed for a round-trip.
+
+    A weekday between leaving home and getting back home costs a PTO day,
+    except: the departure day if leaving after work_end_hour (already worked),
+    and the arrival day if arriving before work_start_hour (can still make it in).
+    """
+    if return_arrival_dt <= out_departure_dt:
+        return 0
+    pto = 0
+    cur = out_departure_dt.date()
+    end = return_arrival_dt.date()
+    while cur <= end:
+        if cur.weekday() < 5:
+            free = False
+            if cur == out_departure_dt.date() and out_departure_dt.hour >= work_end_hour:
+                free = True
+            if cur == return_arrival_dt.date() and return_arrival_dt.hour < work_start_hour:
+                free = True
+            if not free:
+                pto += 1
+        cur += timedelta(days=1)
+    return pto
+
+
 @require_GET
 def search_trips(request):
     try:
         start_id = request.GET.get('start_id')
         end_id = request.GET.get('end_id')
         trip_type = request.GET.get('type', 'single').lower()
+        min_duration_str = request.GET.get('min_duration', '')
         max_duration_str = request.GET.get('max_duration', '')
-        seat_type = request.GET.get('seat_type', 'seat').lower()
+        seat_type = request.GET.get('seat_type', 'couchette').lower()
 
         if not start_id or not end_id:
             return JsonResponse({'status': 'error', 'message': 'Missing start_id or end_id parameters.'}, status=400)
@@ -377,7 +405,9 @@ def search_trips(request):
                     'primary_booking_url': leg['booking_url'],
                 })
         else:
-            max_duration = int(max_duration_str) if max_duration_str.isdigit() else 30
+            min_duration = max(1, int(min_duration_str)) if min_duration_str.isdigit() else 2
+            max_duration = int(max_duration_str) if max_duration_str.isdigit() else 5
+            max_duration = max(min_duration, max_duration)
             return_dep = get_station_names(end_id)
             return_arr = get_station_names(start_id)
             return_routes = list(_get_routes_with_best_price(return_dep, return_arr, seat_type_normalized))
@@ -385,7 +415,7 @@ def search_trips(request):
             for out_route in outbound_routes:
                 valid_returns = [
                     ret for ret in return_routes
-                    if 0 < (ret.travel_date - out_route.travel_date).days <= max_duration
+                    if min_duration <= (ret.travel_date - out_route.travel_date).days <= max_duration
                 ]
 
                 if valid_returns:
@@ -395,7 +425,7 @@ def search_trips(request):
                     combined_booking_url = None
                     if (
                         outbound_leg['provider'] == return_leg['provider']
-                        and outbound_leg['provider'] in (EUROPEAN_SLEEPER, INTERCITY_PL)
+                        and outbound_leg['provider'] in (EUROPEAN_SLEEPER, INTERCITY_PL, REGIOJET)
                     ):
                         combined_booking_url = build_booking_url(
                             outbound_leg['provider'],
@@ -425,9 +455,19 @@ def search_trips(request):
                         'mixed_providers': out_route.source != best_return.source,
                         'primary_booking_url': combined_booking_url or outbound_leg['booking_url'],
                         'secondary_booking_url': None if combined_booking_url else return_leg['booking_url'],
+                        '_pto_cost': _pto_days_needed(
+                            out_route.departure_time,
+                            best_return.arrival_time,
+                        ),
                     })
 
-        results.sort(key=lambda x: x['total_price'])
+        results.sort(key=lambda x: (
+            x['total_price'],
+            x.get('_pto_cost', 0),
+            -x.get('duration_days', 0),
+        ))
+        for r in results:
+            r.pop('_pto_cost', None)
         return JsonResponse({'status': 'success', 'trip_type': trip_type, 'routes': results})
 
     except Exception as e:

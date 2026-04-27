@@ -52,7 +52,7 @@ document.addEventListener('DOMContentLoaded', () => {
         formError.hidden = true;
     }
 
-    const POPULAR_CITY_IDS = ['prague', 'amsterdam', 'brussels', 'berlin', 'paris', 'vienna'];
+    const POPULAR_CITY_IDS = ['amsterdam', 'berlin', 'brussels', 'budapest', 'paris', 'prague', 'vienna', 'warsaw', 'zurich'];
 
     class Combobox {
         constructor({ inputId, listboxId, placeholder }) {
@@ -388,7 +388,7 @@ document.addEventListener('DOMContentLoaded', () => {
             if (primaryBookingUrl) {
                 card.tabIndex = 0;
                 card.setAttribute('role', 'button');
-                
+
                 const openBooking = (event) => {
                     // Prevent opening if clicking on other interactive elements
                     if (event.target.closest('button') && !event.target.closest('.open-booking-modal')) {
@@ -463,6 +463,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 const urlFrom = urlParams.get('from');
                 const urlTo = urlParams.get('to');
                 const urlType = urlParams.get('type');
+                const urlMinDuration = urlParams.get('min_duration');
                 const urlMaxDuration = urlParams.get('max_duration');
                 const urlSeatType = urlParams.get('seat_type');
                 const hasUrlParams = urlFrom || urlTo;
@@ -496,14 +497,19 @@ document.addEventListener('DOMContentLoaded', () => {
                     returnParamsGroup.classList.remove('hidden');
                     returnParamsGroup.classList.add('is-visible');
                 }
+                if (urlMinDuration) {
+                    document.getElementById('min-duration').value = urlMinDuration;
+                }
                 if (urlMaxDuration) {
                     document.getElementById('max-duration').value = urlMaxDuration;
                 }
-                if (urlSeatType === 'couchette') {
+                if (urlMinDuration || urlMaxDuration) {
+                    updateDurationSlider();
+                }
+                if (urlSeatType === 'any') {
+                    document.getElementById('seat-any').checked = true;
+                } else if (urlSeatType === 'couchette') {
                     document.getElementById('seat-couchette').checked = true;
-                } else if (urlSeatType === 'seat') {
-                    const seatRadio = document.querySelector('input[name="seat_type"][value="seat"]');
-                    if (seatRadio) seatRadio.checked = true;
                 }
 
                 // Auto-search if both from and to are specified in URL
@@ -539,6 +545,65 @@ document.addEventListener('DOMContentLoaded', () => {
     } else {
         returnParamsGroup.classList.add('is-visible');
     }
+
+    // Duration range slider
+    const minSlider = document.getElementById('min-duration');
+    const maxSlider = document.getElementById('max-duration');
+    const durationFill = document.getElementById('duration-fill');
+    const durationReadout = document.getElementById('duration-readout');
+
+    const updateDurationSlider = () => {
+        const sliderMin = parseInt(minSlider.min, 10);
+        const sliderMax = parseInt(minSlider.max, 10);
+        const range = sliderMax - sliderMin;
+        const minV = parseInt(minSlider.value, 10);
+        const maxV = parseInt(maxSlider.value, 10);
+        const leftPct = ((minV - sliderMin) / range) * 100;
+        const rightPct = ((sliderMax - maxV) / range) * 100;
+        durationFill.style.left = `${leftPct}%`;
+        durationFill.style.right = `${rightPct}%`;
+        durationReadout.textContent = minV === maxV
+            ? `${minV} day${minV === 1 ? '' : 's'}`
+            : `${minV} – ${maxV} days`;
+    };
+
+    minSlider.addEventListener('input', () => {
+        if (parseInt(minSlider.value, 10) > parseInt(maxSlider.value, 10)) {
+            minSlider.value = maxSlider.value;
+        }
+        updateDurationSlider();
+    });
+
+    maxSlider.addEventListener('input', () => {
+        if (parseInt(maxSlider.value, 10) < parseInt(minSlider.value, 10)) {
+            maxSlider.value = minSlider.value;
+        }
+        updateDurationSlider();
+    });
+
+    // When thumbs are stacked, the topmost one gets the click. Resolve which
+    // handle the user is reaching for by click position so they can always
+    // drag the pair apart.
+    const sliderContainer = document.querySelector('.duration-slider');
+    sliderContainer.addEventListener('pointerdown', (e) => {
+        const rect = sliderContainer.getBoundingClientRect();
+        const sliderMin = parseInt(minSlider.min, 10);
+        const sliderMax = parseInt(minSlider.max, 10);
+        const ratio = Math.max(0, Math.min(1, (e.clientX - rect.left) / rect.width));
+        const clickValue = sliderMin + ratio * (sliderMax - sliderMin);
+        const minV = parseFloat(minSlider.value);
+        const maxV = parseFloat(maxSlider.value);
+        let pickMin;
+        if (minV === maxV) {
+            pickMin = clickValue < minV;
+        } else {
+            pickMin = Math.abs(clickValue - minV) < Math.abs(clickValue - maxV);
+        }
+        minSlider.style.zIndex = pickMin ? '2' : '1';
+        maxSlider.style.zIndex = pickMin ? '1' : '2';
+    }, true);
+
+    updateDurationSlider();
 
     // Format Date helper
     const formatDate = (dateStr) => {
@@ -616,9 +681,14 @@ document.addEventListener('DOMContentLoaded', () => {
         if (formData.get('start_id')) urlParams.set('from', formData.get('start_id'));
         if (formData.get('end_id')) urlParams.set('to', formData.get('end_id'));
         if (formData.get('type') && formData.get('type') !== 'single') urlParams.set('type', formData.get('type'));
-        if (formData.get('seat_type') && formData.get('seat_type') !== 'any') urlParams.set('seat_type', formData.get('seat_type'));
-        if (formData.get('type') === 'return' && formData.get('max_duration') && formData.get('max_duration') !== '14') {
-            urlParams.set('max_duration', formData.get('max_duration'));
+        if (formData.get('seat_type') && formData.get('seat_type') !== 'couchette') urlParams.set('seat_type', formData.get('seat_type'));
+        if (formData.get('type') === 'return') {
+            if (formData.get('min_duration') && formData.get('min_duration') !== '2') {
+                urlParams.set('min_duration', formData.get('min_duration'));
+            }
+            if (formData.get('max_duration') && formData.get('max_duration') !== '5') {
+                urlParams.set('max_duration', formData.get('max_duration'));
+            }
         }
         const qs = urlParams.toString();
         history.replaceState(null, '', qs ? `?${qs}` : '/');

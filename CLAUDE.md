@@ -60,3 +60,7 @@ Full design context (brand, aesthetic, principles) is in `.impeccable.md`. Consu
 ## Environment
 
 Configure via `.env` file. Key variables: `DB_HOST`, `DB_PORT`, `DB_NAME`, `DB_USER`, `DB_PASS`, `TELEGRAM_TOKEN`, `TELEGRAM_CHAT_ID`.
+
+## Guidelines
+
+- never run the DEV server (uv run python manage.py runserver) to check UI changes, I'll run it manually and check by myself
