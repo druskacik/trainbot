@@ -1,5 +1,9 @@
 from collections import Counter, defaultdict
-from datetime import timedelta
+from datetime import date, timedelta
+from functools import lru_cache
+from typing import Iterable
+
+import holidays
 
 from django.db.models import Min, OuterRef, Subquery
 from django.http import JsonResponse
@@ -341,12 +345,33 @@ def _serialize_route_leg(route, start_id, end_id):
     }
 
 
-def _pto_days_needed(out_departure_dt, return_arrival_dt, work_start_hour=10, work_end_hour=17):
+@lru_cache(maxsize=None)
+def _country_holidays(country_code: str, year: int) -> frozenset[date]:
+    # "workday" covers SK/UA state holidays (e.g. May 8 from 2026, Sep 1, Nov 17)
+    # that are legally working days but are widely observed as days off in practice.
+    # "bank" covers AT/BE days like Christmas Eve, NYE, Boxing Day, and bridge Fridays
+    # that are commonly given off even when not legal public holidays.
+    supported = set(holidays.country_holidays(country_code).supported_categories)
+    categories = tuple(c for c in ("public", "workday", "bank") if c in supported)
+    return frozenset(
+        holidays.country_holidays(country_code, years=year, categories=categories).keys()
+    )
+
+
+def _holiday_dates_for(country_code: str, years: Iterable[int]) -> set[date]:
+    result: set[date] = set()
+    for year in set(years):
+        result.update(_country_holidays(country_code, year))
+    return result
+
+
+def _pto_days_needed(out_departure_dt, return_arrival_dt, holiday_set=None, work_start_hour=10, work_end_hour=17):
     """Estimate Mon-Fri vacation days needed for a round-trip.
 
     A weekday between leaving home and getting back home costs a PTO day,
     except: the departure day if leaving after work_end_hour (already worked),
-    and the arrival day if arriving before work_start_hour (can still make it in).
+    the arrival day if arriving before work_start_hour (can still make it in),
+    and any weekday that falls on a public holiday in `holiday_set`.
     """
     if return_arrival_dt <= out_departure_dt:
         return 0
@@ -354,7 +379,7 @@ def _pto_days_needed(out_departure_dt, return_arrival_dt, work_start_hour=10, wo
     cur = out_departure_dt.date()
     end = return_arrival_dt.date()
     while cur <= end:
-        if cur.weekday() < 5:
+        if cur.weekday() < 5 and (holiday_set is None or cur not in holiday_set):
             free = False
             if cur == out_departure_dt.date() and out_departure_dt.hour >= work_end_hour:
                 free = True
@@ -412,6 +437,13 @@ def search_trips(request):
             return_arr = get_station_names(start_id)
             return_routes = list(_get_routes_with_best_price(return_dep, return_arr, seat_type_normalized))
 
+            origin_country = CITY_CATALOG[start_id].get('country')
+            holiday_set: set[date] | None = None
+            if origin_country and outbound_routes:
+                years_in_play = {r.travel_date.year for r in outbound_routes}
+                years_in_play.update(r.travel_date.year for r in return_routes)
+                holiday_set = _holiday_dates_for(origin_country, years_in_play)
+
             for out_route in outbound_routes:
                 valid_returns = [
                     ret for ret in return_routes
@@ -458,6 +490,7 @@ def search_trips(request):
                         '_pto_cost': _pto_days_needed(
                             out_route.departure_time,
                             best_return.arrival_time,
+                            holiday_set=holiday_set,
                         ),
                     })
 

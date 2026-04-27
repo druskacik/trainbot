@@ -17,6 +17,7 @@ INTERCITY_PL_BOOKING_URL = "https://ebilet.intercity.pl"
 CITY_CATALOG = {
     "amsterdam": {
         "name": "Amsterdam",
+        "country": "NL",
         "station_names": [
             "Amsterdam Centraal",
             "Amsterdam CS",
@@ -28,6 +29,7 @@ CITY_CATALOG = {
     },
     "amersfoort": {
         "name": "Amersfoort",
+        "country": "NL",
         "station_names": [
             "Amersfoort",
             "Amersfoort Centraal",
@@ -38,6 +40,7 @@ CITY_CATALOG = {
     },
     "antwerp": {
         "name": "Antwerp",
+        "country": "BE",
         "station_names": [
             "Antwerpen Centraal",
             "Antwerpen-Centraal",
@@ -48,6 +51,7 @@ CITY_CATALOG = {
     },
     "bad_schandau": {
         "name": "Bad Schandau",
+        "country": "DE",
         "station_names": [
             "Bad Schandau",
         ],
@@ -57,6 +61,7 @@ CITY_CATALOG = {
     },
     "basel": {
         "name": "Basel",
+        "country": "CH",
         "station_names": [
             "Basel SBB",
             "Basel Bad Station",
@@ -67,6 +72,7 @@ CITY_CATALOG = {
     },
     "berlin": {
         "name": "Berlin",
+        "country": "DE",
         "station_names": [
             "Berlin Hbf",
             "Berlin Central Station",
@@ -88,6 +94,7 @@ CITY_CATALOG = {
     },
     "bonn": {
         "name": "Bonn",
+        "country": "DE",
         "station_names": [
             "Bonn Central Station",
             "Bonn-Beuel",
@@ -99,6 +106,7 @@ CITY_CATALOG = {
     },
     "bratislava": {
         "name": "Bratislava",
+        "country": "SK",
         "station_names": [
             "Bratislava",
             "Bratislava hl.st.",
@@ -110,6 +118,7 @@ CITY_CATALOG = {
     },
     "brussels": {
         "name": "Brussels",
+        "country": "BE",
         "station_names": [
             "Bruxelles Midi",
             "Bruxelles Midi/Brussel Zuid",
@@ -122,6 +131,7 @@ CITY_CATALOG = {
     },
     "budapest": {
         "name": "Budapest",
+        "country": "HU",
         "station_names": [
             "Budapest",
             "Budapest-Keleti",
@@ -134,6 +144,7 @@ CITY_CATALOG = {
     },
     "decin": {
         "name": "Decin",
+        "country": "CZ",
         "station_names": [
             "Děčín hl.n.",
             "DECIN",
@@ -145,6 +156,7 @@ CITY_CATALOG = {
     },
     "deventer": {
         "name": "Deventer",
+        "country": "NL",
         "station_names": [
             "Deventer",
         ],
@@ -154,6 +166,7 @@ CITY_CATALOG = {
     },
     "dresden": {
         "name": "Dresden",
+        "country": "DE",
         "station_names": [
             "Dresden Hbf",
             "Dresden Central Station",
@@ -165,6 +178,7 @@ CITY_CATALOG = {
     },
     "florence": {
         "name": "Florence",
+        "country": "IT",
         "station_names": [
             "Florence Campo di Marte",
             "Firenze Campo di Marte",
@@ -175,6 +189,7 @@ CITY_CATALOG = {
     },
     "frankfurt_main": {
         "name": "Frankfurt (Main)",
+        "country": "DE",
         "station_names": [
             "Frankfurt(Main)Hbf",
             "Frankfurt (Main) Hbf",
@@ -189,6 +204,7 @@ CITY_CATALOG = {
     },
     "hamburg": {
         "name": "Hamburg",
+        "country": "DE",
         "station_names": [
             "Hamburg Harburg",
             "Hamburg-Harburg",
@@ -204,6 +220,7 @@ CITY_CATALOG = {
     },
     "krakow": {
         "name": "Krakow",
+        "country": "PL",
         "station_names": [
             "Krakow Glowny",
             "Krakow Plaszow",
@@ -217,6 +234,7 @@ CITY_CATALOG = {
     },
     "munich": {
         "name": "Munich",
+        "country": "DE",
         "station_names": [
             "Munich",
             "Munich Central Station",
@@ -232,6 +250,7 @@ CITY_CATALOG = {
     },
     "paris": {
         "name": "Paris",
+        "country": "FR",
         "station_names": [
             "Paris-Nord",
         ],
@@ -241,6 +260,7 @@ CITY_CATALOG = {
     },
     "prague": {
         "name": "Prague",
+        "country": "CZ",
         "station_names": [
             "PRAHA HL. N.",
             "Praha hl.n.",
@@ -259,6 +279,7 @@ CITY_CATALOG = {
     },
     "rome": {
         "name": "Rome",
+        "country": "IT",
         "station_names": [
             "Roma Tiburtina",
             "Rome Tiburtina",
@@ -271,6 +292,7 @@ CITY_CATALOG = {
     },
     "roosendaal": {
         "name": "Roosendaal",
+        "country": "NL",
         "station_names": [
             "Roosendaal",
         ],
@@ -280,6 +302,7 @@ CITY_CATALOG = {
     },
     "rotterdam": {
         "name": "Rotterdam",
+        "country": "NL",
         "station_names": [
             "Rotterdam CS",
             "Rotterdam Centraal",
@@ -290,6 +313,7 @@ CITY_CATALOG = {
     },
     "salzburg": {
         "name": "Salzburg",
+        "country": "AT",
         "station_names": [
             "Salzburg",
             "Salzburg Central Station",
@@ -304,6 +328,7 @@ CITY_CATALOG = {
     },
     "the_hague": {
         "name": "The Hague",
+        "country": "NL",
         "station_names": [
             "Den Haag HS",
         ],
@@ -313,6 +338,7 @@ CITY_CATALOG = {
     },
     "usti_nad_labem": {
         "name": "Usti nad Labem",
+        "country": "CZ",
         "station_names": [
             "Ústí nad Labem hl.n.",
             "USTI NAD LABEM",
@@ -324,6 +350,7 @@ CITY_CATALOG = {
     },
     "venice": {
         "name": "Venice",
+        "country": "IT",
         "station_names": [
             "Venice Santa Lucia",
             "Venice Mestre",
@@ -335,6 +362,7 @@ CITY_CATALOG = {
     },
     "vienna": {
         "name": "Vienna",
+        "country": "AT",
         "station_names": [
             "Vienna",
             "Vienna Central Station",
@@ -349,6 +377,7 @@ CITY_CATALOG = {
     },
     "warsaw": {
         "name": "Warsaw",
+        "country": "PL",
         "station_names": [
             "Warsaw",
             "Warsaw Central Station",
@@ -363,6 +392,7 @@ CITY_CATALOG = {
     },
     "zagreb": {
         "name": "Zagreb",
+        "country": "HR",
         "station_names": [
             "Zagreb Glavni Kolod.",
             "Zagreb Zapadni kolodvor",
@@ -374,6 +404,7 @@ CITY_CATALOG = {
     },
     "zurich": {
         "name": "Zurich",
+        "country": "CH",
         "station_names": [
             "Zurich HB",
             "Zürich HB",
@@ -384,6 +415,7 @@ CITY_CATALOG = {
     },
     "bohumin": {
         "name": "Bohumín",
+        "country": "CZ",
         "station_names": [
             "Bohumín",
             "Bohumin",
@@ -395,6 +427,7 @@ CITY_CATALOG = {
     },
     "bystrice_trinec": {
         "name": "Bystřice (Třinec)",
+        "country": "CZ",
         "station_names": [
             "Bystřice (Třinec)",
         ],
@@ -404,6 +437,7 @@ CITY_CATALOG = {
     },
     "cadca": {
         "name": "Čadca",
+        "country": "SK",
         "station_names": [
             "Čadca",
         ],
@@ -413,6 +447,7 @@ CITY_CATALOG = {
     },
     "ceska_trebova": {
         "name": "Česká Třebová",
+        "country": "CZ",
         "station_names": [
             "Česká Třebová",
         ],
@@ -422,6 +457,7 @@ CITY_CATALOG = {
     },
     "cesky_tesin": {
         "name": "Český Těšín",
+        "country": "CZ",
         "station_names": [
             "Český Těšín",
         ],
@@ -431,6 +467,7 @@ CITY_CATALOG = {
     },
     "chop": {
         "name": "Chop",
+        "country": "UA",
         "station_names": [
             "Chop",
         ],
@@ -440,6 +477,7 @@ CITY_CATALOG = {
     },
     "havirov": {
         "name": "Havířov",
+        "country": "CZ",
         "station_names": [
             "Havířov",
         ],
@@ -449,6 +487,7 @@ CITY_CATALOG = {
     },
     "hranice_na_morave": {
         "name": "Hranice na Moravě",
+        "country": "CZ",
         "station_names": [
             "Hranice na M.",
         ],
@@ -458,6 +497,7 @@ CITY_CATALOG = {
     },
     "kosice": {
         "name": "Košice",
+        "country": "SK",
         "station_names": [
             "Košice",
         ],
@@ -467,6 +507,7 @@ CITY_CATALOG = {
     },
     "kysak": {
         "name": "Kysak (Prešov)",
+        "country": "SK",
         "station_names": [
             "Kysak (u města Prešov)",
         ],
@@ -476,6 +517,7 @@ CITY_CATALOG = {
     },
     "liptovsky_mikulas": {
         "name": "Liptovský Mikuláš",
+        "country": "SK",
         "station_names": [
             "Liptovský Mikuláš",
         ],
@@ -485,6 +527,7 @@ CITY_CATALOG = {
     },
     "margecany": {
         "name": "Margecany",
+        "country": "SK",
         "station_names": [
             "Margecany",
         ],
@@ -494,6 +537,7 @@ CITY_CATALOG = {
     },
     "navsi": {
         "name": "Návsí (Jablunkov)",
+        "country": "CZ",
         "station_names": [
             "Návsí (Jablunkov)",
         ],
@@ -503,6 +547,7 @@ CITY_CATALOG = {
     },
     "olomouc": {
         "name": "Olomouc",
+        "country": "CZ",
         "station_names": [
             "Olomouc",
         ],
@@ -512,6 +557,7 @@ CITY_CATALOG = {
     },
     "opava": {
         "name": "Opava východ",
+        "country": "CZ",
         "station_names": [
             "Opava východ",
         ],
@@ -521,6 +567,7 @@ CITY_CATALOG = {
     },
     "ostrava": {
         "name": "Ostrava",
+        "country": "CZ",
         "station_names": [
             "Ostrava",
         ],
@@ -531,6 +578,7 @@ CITY_CATALOG = {
     },
     "pardubice": {
         "name": "Pardubice",
+        "country": "CZ",
         "station_names": [
             "Pardubice",
         ],
@@ -540,6 +588,7 @@ CITY_CATALOG = {
     },
     "poprad": {
         "name": "Poprad",
+        "country": "SK",
         "station_names": [
             "Poprad",
         ],
@@ -549,6 +598,7 @@ CITY_CATALOG = {
     },
     "premysl": {
         "name": "Przemyśl",
+        "country": "PL",
         "station_names": [
             "Przemysl",
             "Přemyšl",
@@ -560,6 +610,7 @@ CITY_CATALOG = {
     },
     "resov": {
         "name": "Řešov",
+        "country": "PL",
         "station_names": [
             "Řešov",
         ],
@@ -569,6 +620,7 @@ CITY_CATALOG = {
     },
     "ruzomberok": {
         "name": "Ružomberok",
+        "country": "SK",
         "station_names": [
             "Ružomberok",
         ],
@@ -578,6 +630,7 @@ CITY_CATALOG = {
     },
     "spisska_nova_ves": {
         "name": "Spišská Nová Ves",
+        "country": "SK",
         "station_names": [
             "Spišská Nová Ves",
         ],
@@ -587,6 +640,7 @@ CITY_CATALOG = {
     },
     "strba": {
         "name": "Štrba",
+        "country": "SK",
         "station_names": [
             "Štrba",
         ],
@@ -596,6 +650,7 @@ CITY_CATALOG = {
     },
     "trinec": {
         "name": "Třinec centrum",
+        "country": "CZ",
         "station_names": [
             "Třinec centrum",
         ],
@@ -605,6 +660,7 @@ CITY_CATALOG = {
     },
     "vrutky": {
         "name": "Vrútky",
+        "country": "SK",
         "station_names": [
             "Vrútky",
         ],
@@ -614,6 +670,7 @@ CITY_CATALOG = {
     },
     "zabrezh_na_morave": {
         "name": "Zábřeh na Moravě",
+        "country": "CZ",
         "station_names": [
             "Zábřeh na Moravě",
         ],
@@ -623,6 +680,7 @@ CITY_CATALOG = {
     },
     "zilina": {
         "name": "Žilina",
+        "country": "SK",
         "station_names": [
             "Žilina",
         ],
@@ -632,6 +690,7 @@ CITY_CATALOG = {
     },
     "bielsko_biala": {
         "name": "Bielsko-Biała",
+        "country": "PL",
         "station_names": ["Bielsko-Biala"],
         "providers": {
             INTERCITY_PL: {"eva": "5100316"},
@@ -639,6 +698,7 @@ CITY_CATALOG = {
     },
     "bydgoszcz": {
         "name": "Bydgoszcz",
+        "country": "PL",
         "station_names": ["Bydgoszcz"],
         "providers": {
             INTERCITY_PL: {"eva": "5100005"},
@@ -646,6 +706,7 @@ CITY_CATALOG = {
     },
     "czestochowa": {
         "name": "Częstochowa",
+        "country": "PL",
         "station_names": ["Czestochowa"],
         "providers": {
             INTERCITY_PL: {"eva": "5196005"},
@@ -653,6 +714,7 @@ CITY_CATALOG = {
     },
     "gdansk": {
         "name": "Gdańsk",
+        "country": "PL",
         "station_names": ["Gdansk"],
         "providers": {
             INTERCITY_PL: {"eva": "5100009"},
@@ -660,6 +722,7 @@ CITY_CATALOG = {
     },
     "gdynia": {
         "name": "Gdynia",
+        "country": "PL",
         "station_names": ["Gdynia"],
         "providers": {
             INTERCITY_PL: {"eva": "5100010"},
@@ -667,6 +730,7 @@ CITY_CATALOG = {
     },
     "hel": {
         "name": "Hel",
+        "country": "PL",
         "station_names": ["Hel"],
         "providers": {
             INTERCITY_PL: {"eva": "5101340"},
@@ -674,6 +738,7 @@ CITY_CATALOG = {
     },
     "jelenia_gora": {
         "name": "Jelenia Góra",
+        "country": "PL",
         "station_names": ["Jelenia Gora"],
         "providers": {
             INTERCITY_PL: {"eva": "5100259"},
@@ -681,6 +746,7 @@ CITY_CATALOG = {
     },
     "katowice": {
         "name": "Katowice",
+        "country": "PL",
         "station_names": ["Katowice"],
         "providers": {
             INTERCITY_PL: {"eva": "5196028"},
@@ -688,6 +754,7 @@ CITY_CATALOG = {
     },
     "klodzko": {
         "name": "Kłodzko",
+        "country": "PL",
         "station_names": ["Klodzko"],
         "providers": {
             INTERCITY_PL: {"eva": "5196183"},
@@ -695,6 +762,7 @@ CITY_CATALOG = {
     },
     "kolobrzeg": {
         "name": "Kołobrzeg",
+        "country": "PL",
         "station_names": ["Kolobrzeg"],
         "providers": {
             INTERCITY_PL: {"eva": "5100025"},
@@ -702,6 +770,7 @@ CITY_CATALOG = {
     },
     "linz": {
         "name": "Linz",
+        "country": "AT",
         "station_names": ["Linz"],
         "providers": {
             INTERCITY_PL: {"eva": "8100013"},
@@ -709,6 +778,7 @@ CITY_CATALOG = {
     },
     "lublin": {
         "name": "Lublin",
+        "country": "PL",
         "station_names": ["Lublin"],
         "providers": {
             INTERCITY_PL: {"eva": "5196030"},
@@ -716,6 +786,7 @@ CITY_CATALOG = {
     },
     "rijeka": {
         "name": "Rijeka",
+        "country": "HR",
         "station_names": ["Rijeka"],
         "providers": {
             INTERCITY_PL: {"eva": "7800013"},
@@ -723,6 +794,7 @@ CITY_CATALOG = {
     },
     "lodz": {
         "name": "Łódź",
+        "country": "PL",
         "station_names": ["Lodz"],
         "providers": {
             INTERCITY_PL: {"eva": "5196010"},
@@ -730,6 +802,7 @@ CITY_CATALOG = {
     },
     "poznan": {
         "name": "Poznań",
+        "country": "PL",
         "station_names": ["Poznan"],
         "providers": {
             INTERCITY_PL: {"eva": "5100081"},
@@ -737,6 +810,7 @@ CITY_CATALOG = {
     },
     "rzeszow": {
         "name": "Rzeszów",
+        "country": "PL",
         "station_names": ["Rzeszow"],
         "providers": {
             INTERCITY_PL: {"eva": "5196031"},
@@ -744,6 +818,7 @@ CITY_CATALOG = {
     },
     "swinoujscie": {
         "name": "Świnoujście",
+        "country": "PL",
         "station_names": ["Swinoujscie"],
         "providers": {
             INTERCITY_PL: {"eva": "5100059"},
@@ -751,6 +826,7 @@ CITY_CATALOG = {
     },
     "szczecin": {
         "name": "Szczecin",
+        "country": "PL",
         "station_names": ["Szczecin"],
         "providers": {
             INTERCITY_PL: {"eva": "5196004"},
@@ -758,6 +834,7 @@ CITY_CATALOG = {
     },
     "szklarska_poreba": {
         "name": "Szklarska Poręba",
+        "country": "PL",
         "station_names": ["Szklarska Poreba"],
         "providers": {
             INTERCITY_PL: {"eva": "5100058"},
@@ -765,6 +842,7 @@ CITY_CATALOG = {
     },
     "torun": {
         "name": "Toruń",
+        "country": "PL",
         "station_names": ["Torun"],
         "providers": {
             INTERCITY_PL: {"eva": "5196025"},
@@ -772,6 +850,7 @@ CITY_CATALOG = {
     },
     "wroclaw": {
         "name": "Wrocław",
+        "country": "PL",
         "station_names": ["Wroclaw"],
         "providers": {
             INTERCITY_PL: {"eva": "5196026"},
@@ -779,6 +858,7 @@ CITY_CATALOG = {
     },
     "zakopane": {
         "name": "Zakopane",
+        "country": "PL",
         "station_names": ["Zakopane"],
         "providers": {
             INTERCITY_PL: {"eva": "5100158"},
