@@ -15,3 +15,5 @@ wheels/
 data
 
 staticfiles
+
+.ipynb_checkpoints

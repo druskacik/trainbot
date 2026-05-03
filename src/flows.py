@@ -17,6 +17,7 @@ sys.path.append(str(project_root))
 
 from src.scrapers.european_sleeper import EuropeanSleeperScraper
 from src.scrapers.intercity_pl import IntercityPlScraper
+from src.scrapers.kombo import KomboScraper
 from src.scrapers.nightjet import NightjetScraper
 from src.scrapers.regiojet import RegioJetScraper
 from src.ScrapeResult import combined_failure_summary, _cap_for_telegram
@@ -46,6 +47,7 @@ scrape_european_sleeper = _make_scrape_task(EuropeanSleeperScraper, "European Sl
 scrape_nightjet = _make_scrape_task(NightjetScraper, "Nightjet")
 scrape_regiojet = _make_scrape_task(RegioJetScraper, "RegioJet")
 scrape_intercity_pl = _make_scrape_task(IntercityPlScraper, "Intercity.pl")
+scrape_kombo = _make_scrape_task(KomboScraper, "Kombo")
 
 
 def _run_flow_with_notifications(scrape_task, flow_name: str):
@@ -91,6 +93,7 @@ european_sleeper_flow = _make_flow(scrape_european_sleeper, "European Sleeper Sc
 nightjet_flow = _make_flow(scrape_nightjet, "Nightjet Scraper")
 regiojet_flow = _make_flow(scrape_regiojet, "RegioJet Scraper")
 intercity_pl_flow = _make_flow(scrape_intercity_pl, "Intercity.pl Scraper")
+kombo_flow = _make_flow(scrape_kombo, "Kombo Scraper")
 
 
 # Soft deadline for the daily flow. We enforce this ourselves (instead of using
@@ -101,7 +104,7 @@ DAILY_FLOW_DEADLINE_SECONDS = 23 * 3600
 
 @flow(name="Daily Train Scraper")
 def daily_scraper_flow():
-    """Flow to run all scrapers (European Sleeper + Nightjet + RegioJet + Intercity.pl)
+    """Flow to run all scrapers (European Sleeper + Nightjet + RegioJet + Intercity.pl + Kombo)
     with a shared soft deadline. Scrapers that exceed the deadline are reported as
     timed out; the flow still sends a Telegram notification and returns so the
     deployment's concurrency slot frees up for the next scheduled run."""
@@ -117,6 +120,7 @@ def daily_scraper_flow():
         ("Nightjet", scrape_nightjet.submit()),
         ("RegioJet", scrape_regiojet.submit()),
         ("Intercity.pl", scrape_intercity_pl.submit()),
+        ("Kombo", scrape_kombo.submit()),
     ]
 
     results = []
@@ -172,4 +176,5 @@ if __name__ == "__main__":
         nightjet_flow.to_deployment(name="nightjet"),
         regiojet_flow.to_deployment(name="regiojet"),
         intercity_pl_flow.to_deployment(name="intercity-pl"),
+        kombo_flow.to_deployment(name="kombo"),
     )
