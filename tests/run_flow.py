@@ -10,6 +10,7 @@ from src.flows import (
     daily_scraper_flow,
     european_sleeper_flow,
     intercity_pl_flow,
+    kombo_flow,
     nightjet_flow,
     regiojet_flow,
 )
@@ -19,6 +20,7 @@ FLOWS = {
     "nightjet": nightjet_flow,
     "regiojet": regiojet_flow,
     "intercity_pl": intercity_pl_flow,
+    "kombo": kombo_flow,
     "daily": daily_scraper_flow,
 }
 
@@ -28,7 +30,7 @@ def main():
     parser.add_argument(
         "flow",
         choices=list(FLOWS.keys()),
-        help="Which flow to run: european_sleeper, nightjet, or daily (both).",
+        help="Which flow to run",
     )
     args = parser.parse_args()
     flow_fn = FLOWS[args.flow]
